@@ -7,10 +7,10 @@
 		<artifactId>perfulandia</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>com.duoc.msvc.envios</groupId>
-	<artifactId>msvc-envios</artifactId>
+	<groupId>com.duoc.msvc.usuarios</groupId>
+	<artifactId>msvc-usuario</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>msvc-envios</name>
+	<name>msvc-usuarios</name>
 	<description>Nada por ahora</description>
 	<url/>
 	<licenses>

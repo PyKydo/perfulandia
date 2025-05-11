@@ -14,14 +14,14 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>msvc-usuarios</module>
-        <module>msvc-sucursales</module>
-        <module>msvc-productos</module>
-        <module>msvc-inventarios</module>
-        <module>msvc-pagos</module>
-        <module>msvc-pedidos</module>
-        <module>msvc-envios</module>
-        <module>msvc-resenas</module>
+        <module>msvc-usuario</module>
+        <module>msvc-sucursal</module>
+        <module>msvc-producto</module>
+        <module>msvc-inventario</module>
+        <module>msvc-pago</module>
+        <module>msvc-pedido</module>
+        <module>msvc-envio</module>
+        <module>msvc-resena</module>
     </modules>
     <properties>
         <java.version>21</java.version>
