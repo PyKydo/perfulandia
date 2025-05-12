@@ -1,4 +1,4 @@
-package com.duoc.msvc.usuarios.models;
+package com.duoc.msvc.usuarios.models.entities;
 
 
 import jakarta.persistence.*;
@@ -15,11 +15,16 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
+
     @Column(nullable = false)
     @NotBlank(message = "El campo nombre no puede estar vacio")
     private String nombres;
 
-    private String apellido;
+    @Column(nullable = false)
+    @NotBlank(message = "El campo nombre no puede estar vacio")
+    private String apellidos;
 
     private String correo;
+
+    private String telefono;
 }
