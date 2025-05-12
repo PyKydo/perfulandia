@@ -1,6 +1,6 @@
 package com.duoc.msvc.usuarios.services;
 
-import com.duoc.msvc.usuarios.models.Usuario;
+import com.duoc.msvc.usuarios.models.entities.Usuario;
 
 import java.util.List;
 
