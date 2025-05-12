@@ -18,5 +18,4 @@ public class Producto {
     @Column(nullable = false, unique = true)
     @NotBlank(message = "El campo ")
     private String marca;
-    private
 }
