@@ -4,10 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.sql.Blob;
+
 @Entity
 @Table(name = "productos")
-@Getter @Setter @ToString
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +31,7 @@ public class Producto {
     private String descripcion;
 
     @Column(nullable = false)
-    private String imagenRepresentativa;
+    private Blob imagenRepresentativa;
 
     @Column(nullable = false)
     @NotBlank(message = "El campo precio está en blanco")
