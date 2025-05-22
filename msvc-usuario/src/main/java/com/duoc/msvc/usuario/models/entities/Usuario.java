@@ -18,13 +18,21 @@ public class Usuario {
 
     @Column(nullable = false)
     @NotBlank(message = "El campo nombre no puede estar vacio")
-    private String nombres;
+    private String nombre;
+
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo nombre no puede estar vacio")
-    private String apellidos;
+    @NotBlank(message = "El campo contraseña no puede estar vacio")
+    private String contraseña;
 
+    @Column(nullable = false)
+    @NotBlank(message = "El campo apellido no puede estar vacio")
+    private String apellido;
+
+    @Column(nullable = false)
+    @NotBlank(message = "El campo correo no puede estar vacio")
     private String correo;
+
 
     private String telefono;
 }
