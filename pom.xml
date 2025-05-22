@@ -17,11 +17,9 @@
         <module>msvc-usuario</module>
         <module>msvc-sucursal</module>
         <module>msvc-producto</module>
-        <module>msvc-inventario</module>
         <module>msvc-pago</module>
         <module>msvc-pedido</module>
         <module>msvc-envio</module>
-        <module>msvc-resena</module>
     </modules>
     <properties>
         <java.version>21</java.version>
