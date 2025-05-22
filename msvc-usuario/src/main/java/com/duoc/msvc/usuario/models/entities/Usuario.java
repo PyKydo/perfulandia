@@ -15,19 +15,21 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-
     @Column(nullable = false)
     @NotBlank(message = "El campo nombre no puede estar vacio")
     private String nombre;
 
-
-    @Column(nullable = false)
-    @NotBlank(message = "El campo contraseña no puede estar vacio")
-    private String contraseña;
-
     @Column(nullable = false)
     @NotBlank(message = "El campo apellido no puede estar vacio")
     private String apellido;
+
+    @Column(nullable = false)
+    @NotBlank(message = "El campo contraseña no puede estar vacio")
+    private String contrasena;
+
+    @Column(nullable = false)
+    @NotBlank(message = "El campo rol no puede estar vacio")
+    private String rol;
 
     @Column(nullable = false)
     @NotBlank(message = "El campo correo no puede estar vacio")
