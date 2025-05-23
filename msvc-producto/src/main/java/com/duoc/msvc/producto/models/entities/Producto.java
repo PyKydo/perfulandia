@@ -1,4 +1,4 @@
-package com.duoc.msvc.producto.models;
+package com.duoc.msvc.producto.models.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-import java.sql.Blob;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "productos")
@@ -32,14 +32,11 @@ public class Producto {
     @Column(nullable = false)
     @Positive
     @NotNull(message = "El campo precio está en blanco")
-    private Integer precio;
+    private BigDecimal precio;
 
-    @Column(nullable = false)
-    private String descripcion;
+    private String descripcion = "Esta es la descripción de un Producto de Perfulandia";
 
-    @Column(nullable = false)
-    private Blob imagenRepresentativa; // Para guardar el archivo de la imagen (secuencia de bytes).
+    private String imagenRepresentativaURL = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png"; // Para guardar el archivo de la imagen (secuencia de bytes).
 
-    @Column(nullable = false)
-    private String categoria;
+    private String categoria = "Sin especificar";
 }

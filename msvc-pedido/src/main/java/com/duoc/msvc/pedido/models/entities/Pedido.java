@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
 @Table(name = "pedidos")
 @Getter
 @Setter
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pedido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pedido")
@@ -29,17 +32,14 @@ public class Pedido {
     @NotNull(message = "El campo idCliente no puede estar vacio")
     private Long idCliente;
 
-    @Column(nullable = false)
-    @NotBlank(message = "El campo fecha no puede estar vacio")
+    @Column(name = "fecha_pedido", updatable = false)
     private LocalDateTime fecha;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo estado no puede estar vacio")
-    private String estado;
-
-    @Column(nullable = false)
     @Positive
-    @NotBlank(message = "El campo total no puede estar vacio")
-    private Integer total;
+    @NotNull(message = "El campo total no puede estar vacio")
+    private BigDecimal total; // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
+
+    private String estado = "Pendiente";
 
 }
