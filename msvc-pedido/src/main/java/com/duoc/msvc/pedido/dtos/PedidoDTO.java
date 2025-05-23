@@ -1,6 +1,7 @@
 package com.duoc.msvc.pedido.dtos;
 
 
+import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,5 +14,5 @@ public class PedidoDTO {
     private Long idCliente;
     private BigDecimal total;
     private String estado;
-    private List<DetallePedidoDTO> detallesPedido;
+    private List<DetallePedido> detallesPedido;
 }
