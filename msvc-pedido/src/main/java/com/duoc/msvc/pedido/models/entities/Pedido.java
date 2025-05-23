@@ -9,6 +9,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "pedidos")
@@ -32,14 +33,14 @@ public class Pedido {
     @NotNull(message = "El campo idCliente no puede estar vacio")
     private Long idCliente;
 
-    @Column(name = "fecha_pedido", updatable = false)
-    private LocalDateTime fecha;
-
     @Column(nullable = false)
     @Positive
     @NotNull(message = "El campo total no puede estar vacio")
     private BigDecimal total; // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
 
-    private String estado = "Pendiente";
+    private String estado = "";
+
+    //@Column(updatable = false)
+    //private String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
 }

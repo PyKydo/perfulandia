@@ -9,5 +9,4 @@ public class MsvcPagoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MsvcPagoApplication.class, args);
 	}
-
 }

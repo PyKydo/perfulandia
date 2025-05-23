@@ -4,6 +4,7 @@ package com.duoc.msvc.usuario.services;
 import com.duoc.msvc.usuario.exceptions.UsuarioException;
 import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.repositories.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +13,13 @@ import java.util.List;
 @Service
 public class UsuarioServicelmpl implements UsuarioService{
 
+    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Override
-    public List<Usuario> findAll() {return this.usuarioRepository.findAll();}
+    public List<Usuario> findAll(){
+        return this.usuarioRepository.findAll();
+    }
 
 
     @Override
@@ -27,6 +31,6 @@ public class UsuarioServicelmpl implements UsuarioService{
 
     @Override
     public Usuario save(Usuario usuario) {
-        return null;
+        return this.usuarioRepository.save(usuario);
     }
 }
