@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "pagos")
 @Getter
@@ -19,13 +22,21 @@ public class Pago {
     @Column(name = "id_pago")
     private Long idPago;
 
+    private LocalDateTime fecha;
+
     @Column(nullable = false)
     @NotBlank(message = "El campo metodo no puede estar vacio")
-    private String metodo; // Efectivo, débito, crédito, etc.
+    private String metodo; // Efectivo, Débito, Crédito, etc.
+
+    @Column(nullable = false)
+    @NotBlank(message = "El campo metodo no puede estar vacio")
+    private String estado; // Pendiente, Completado, Rechazado, etc.
 
     @Column(nullable = false)
     @Positive
     @NotNull(message = "El campo monto no puede estar vacio")
-    private Integer monto;
+    private BigDecimal monto;
+
+
 
 }
