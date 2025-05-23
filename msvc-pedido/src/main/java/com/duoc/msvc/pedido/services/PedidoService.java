@@ -1,13 +1,14 @@
 package com.duoc.msvc.pedido.services;
 
 
+import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.models.entities.Pedido;
 
 import java.util.List;
 
 public interface PedidoService{
-    List<Pedido> findAll();
-    List<Pedido> findByIdCliente(Long idCliente);
-    Pedido findById(Long id);
-    Pedido save(Pedido pedido);
+    List<PedidoDTO> findAll();
+    List<PedidoDTO> findByIdCliente(Long idCliente);
+    PedidoDTO findById(Long id);
+    PedidoDTO save(Pedido pedido);
 }

@@ -1,6 +1,9 @@
 package com.duoc.msvc.pedido.services;
 
+import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
+import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.exceptions.PedidoException;
+import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import com.duoc.msvc.pedido.models.entities.Pedido;
 import com.duoc.msvc.pedido.repositories.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,24 +17,50 @@ public class PedidoServiceImpl implements PedidoService{
     private PedidoRepository pedidoRepository;
 
     @Override
-    public List<Pedido> findAll() {
-        return this.pedidoRepository.findAll();
+    public List<PedidoDTO> findAll() {
+        return this.pedidoRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     @Override
-    public List<Pedido> findByIdCliente(Long idCliente) {
-        return this.pedidoRepository.findByIdCliente(idCliente);
+    public List<PedidoDTO> findByIdCliente(Long idCliente) {
+        return this.pedidoRepository.findByIdCliente(idCliente).stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     @Override
-    public Pedido findById(Long id) {
-        return this.pedidoRepository.findById(id).orElseThrow(
-                () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
-        );
+    public PedidoDTO findById(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos"));
+        return convertToDTO(pedido);
     }
 
     @Override
-    public Pedido save(Pedido pedido) {
-        return this.pedidoRepository.save(pedido);
+    public PedidoDTO save(Pedido pedido) {
+        return convertToDTO(this.pedidoRepository.save(pedido));
+    }
+
+    private PedidoDTO convertToDTO(Pedido pedido) {
+        PedidoDTO dto = new PedidoDTO();
+        dto.setIdPedido(pedido.getIdPedido());
+        dto.setIdCliente(pedido.getIdCliente());
+        dto.setTotal(pedido.getTotal());
+        dto.setEstado(pedido.getEstado());
+
+        // Convertir detalles a DTOs
+        List<DetallePedidoDTO> detallesDTO = pedido.getDetallesPedido().stream()
+                .map(detalle -> {
+                    DetallePedidoDTO detalleDTO = new DetallePedidoDTO();
+                    detalleDTO.setIdProducto(detalle.getIdProducto());
+                    detalleDTO.setCantidad(detalle.getCantidad());
+
+                    return detalleDTO;
+                })
+                .toList();
+
+        dto.setDetallesPedido(detallesDTO);
+        return dto;
     }
 }

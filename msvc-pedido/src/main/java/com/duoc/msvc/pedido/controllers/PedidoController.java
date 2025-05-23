@@ -1,5 +1,6 @@
 package com.duoc.msvc.pedido.controllers;
 
+import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.models.entities.Pedido;
 import com.duoc.msvc.pedido.services.PedidoService;
 import jakarta.validation.Valid;
@@ -20,23 +21,25 @@ public class PedidoController {
     private PedidoService pedidoService;
 
     @GetMapping
-    public ResponseEntity<List<Pedido>> findAll(){
+    public ResponseEntity<List<PedidoDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pedido> findById(@PathVariable Long id){
+    public ResponseEntity<PedidoDTO> findById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Pedido> save(@Valid @RequestBody Pedido pedido){
+    public ResponseEntity<PedidoDTO> save(@Valid @RequestBody Pedido pedido){
         return ResponseEntity.status(HttpStatus.CREATED).body(this.pedidoService.save(pedido));
     }
 
     @GetMapping("/cliente/{id}")
-    public ResponseEntity<List<Pedido>> findByIdCliente(@PathVariable Long id){
+    public ResponseEntity<List<PedidoDTO>> findByIdCliente(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findByIdCliente(id));
     }
+
+
 
 }
