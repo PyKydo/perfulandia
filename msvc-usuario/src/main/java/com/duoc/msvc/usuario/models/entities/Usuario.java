@@ -24,17 +24,16 @@ public class Usuario {
     private String apellido;
 
     @Column(nullable = false)
+    @NotBlank(message = "El campo correo no puede estar vacio")
+    private String correo;
+
+    @Column(nullable = false)
     @NotBlank(message = "El campo contraseña no puede estar vacio")
     private String contrasena;
 
     @Column(nullable = false)
     @NotBlank(message = "El campo rol no puede estar vacio")
     private String rol;
-
-    @Column(nullable = false)
-    @NotBlank(message = "El campo correo no puede estar vacio")
-    private String correo;
-
 
     private String telefono;
 }
