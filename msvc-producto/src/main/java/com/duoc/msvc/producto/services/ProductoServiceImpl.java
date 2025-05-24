@@ -24,6 +24,10 @@ public class ProductoServiceImpl implements ProductoService{
                 () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
         );
     }
+    @Override
+    public List<Producto> findByCategoria(String categoria) {
+        return this.productoRepository.findByCategoria(categoria);
+    }
 
     @Override
     public Producto save(Producto producto) {

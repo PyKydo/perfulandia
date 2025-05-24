@@ -28,6 +28,11 @@ public class ProductoController {
         return ResponseEntity.status(HttpStatus.OK).body(productoService.findById(id));
     }
 
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<List<Producto>> findByCategoria(@PathVariable String categoria){
+        return ResponseEntity.status(HttpStatus.OK).body(productoService.findByCategoria(categoria));
+    }
+
     @PostMapping
     public ResponseEntity<Producto> save(@Valid @RequestBody Producto producto){
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(producto));
