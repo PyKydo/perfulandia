@@ -3,6 +3,7 @@ package com.duoc.msvc.envio.models.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity @Table(name = "envios")
@@ -37,10 +38,10 @@ public class Envio {
 
     @Column(nullable = false)
     @NotBlank(message = "El campo estado envio no puede estar vacio")
-    private String estadoEnvio;
+    private String estado;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo direccion envio no puede estar vacio")
-    private String direccionEnvio;
+    @NotNull(message = "El campo estado id pedido no puede estar vacio")
+    private Long idPedido;
 
 }
