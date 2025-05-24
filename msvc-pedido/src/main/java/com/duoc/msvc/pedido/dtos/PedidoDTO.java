@@ -14,5 +14,5 @@ public class PedidoDTO {
     private Long idCliente;
     private BigDecimal total;
     private String estado;
-    private List<DetallePedido> detallesPedido;
+    private List<DetallePedidoDTO> detallesPedido;
 }
