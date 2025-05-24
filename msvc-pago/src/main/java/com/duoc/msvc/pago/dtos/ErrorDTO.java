@@ -1,4 +1,4 @@
-package com.duoc.msvc.envio.dtos;
+package com.duoc.msvc.pago.dtos;
 
 import java.util.Date;
 import java.util.Map;

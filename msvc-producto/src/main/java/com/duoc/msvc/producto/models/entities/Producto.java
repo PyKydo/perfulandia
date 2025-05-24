@@ -1,5 +1,6 @@
 package com.duoc.msvc.producto.models.entities;
 
+import com.duoc.msvc.producto.models.InventarioSucursal;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,4 +41,6 @@ public class Producto {
     private String imagenRepresentativaURL = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png"; // Guarda URL de la Imagen.
 
     private String categoria = "Sin especificar";
+
+    private InventarioSucursal inventarioSucursal;
 }

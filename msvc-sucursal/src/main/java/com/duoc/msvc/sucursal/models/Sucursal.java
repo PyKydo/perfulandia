@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "sucursal")
 @ToString @Getter @Setter
@@ -36,4 +39,7 @@ public class Sucursal {
     @Column(nullable = false)
     @NotBlank(message = "El campo horarios Atencion no puede estar vacio")
     private String horariosAtencion;
+
+    @OneToMany(mappedBy = "sucursal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Inventario> inventariosSucursal =  new ArrayList<>();
 }

@@ -6,7 +6,6 @@ import java.util.Map;
 public class ErrorDTO {
     private Integer status;
     private Date date;
-
     private Map<String, String> errors;
 
     @Override

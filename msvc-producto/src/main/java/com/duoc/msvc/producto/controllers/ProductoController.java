@@ -1,5 +1,6 @@
 package com.duoc.msvc.producto.controllers;
 
+import com.duoc.msvc.producto.dtos.ProductoDTO;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.services.ProductoService;
 import jakarta.validation.Valid;
@@ -19,22 +20,22 @@ public class ProductoController {
     private ProductoService productoService;
 
     @GetMapping
-    public ResponseEntity<List<Producto>> findAll(){
+    public ResponseEntity<List<ProductoDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(productoService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> findById(@PathVariable Long id){
+    public ResponseEntity<ProductoDTO> findById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(productoService.findById(id));
     }
 
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<Producto>> findByCategoria(@PathVariable String categoria){
+    public ResponseEntity<List<ProductoDTO>> findByCategoria(@PathVariable String categoria){
         return ResponseEntity.status(HttpStatus.OK).body(productoService.findByCategoria(categoria));
     }
 
     @PostMapping
-    public ResponseEntity<Producto> save(@Valid @RequestBody Producto producto){
+    public ResponseEntity<ProductoDTO> save(@Valid @RequestBody Producto producto){
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(producto));
     }
 }

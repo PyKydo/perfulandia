@@ -1,5 +1,6 @@
 package com.duoc.msvc.producto.services;
 
+import com.duoc.msvc.producto.dtos.ProductoDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
@@ -14,23 +15,37 @@ public class ProductoServiceImpl implements ProductoService{
     private ProductoRepository productoRepository;
 
     @Override
-    public List<Producto> findAll() {
-        return this.productoRepository.findAll();
+    public List<ProductoDTO> findAll() {
+        return this.productoRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 
     @Override
-    public Producto findById(Long id) {
-        return this.productoRepository.findById(id).orElseThrow(
+    public ProductoDTO findById(Long id) {
+        Producto producto = this.productoRepository.findById(id).orElseThrow(
                 () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
         );
+
+        return convertToDTO(producto);
     }
     @Override
-    public List<Producto> findByCategoria(String categoria) {
-        return this.productoRepository.findByCategoria(categoria);
+    public List<ProductoDTO> findByCategoria(String categoria) {
+        return this.productoRepository.findByCategoria(categoria).stream().map(this::convertToDTO).toList();
     }
 
     @Override
-    public Producto save(Producto producto) {
-        return this.productoRepository.save(producto);
+    public ProductoDTO save(Producto producto) {
+        return convertToDTO(this.productoRepository.save(producto));
+    }
+
+    @Override
+    public ProductoDTO convertToDTO(Producto producto) {
+        ProductoDTO dto = new ProductoDTO();
+        dto.setNombre(producto.getNombre());
+        dto.setMarca(producto.getMarca());
+        dto.setPrecio(producto.getPrecio());
+        dto.setDescripcion(producto.getDescripcion());
+        dto.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
+        dto.setCategoria(producto.getCategoria());
+        return dto;
     }
 }

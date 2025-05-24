@@ -1,7 +1,11 @@
 package com.duoc.msvc.producto.dtos;
 
+import lombok.*;
+
 import java.math.BigDecimal;
 
+@Getter @Setter @ToString
+@AllArgsConstructor @NoArgsConstructor
 public class ProductoDTO {
     private String nombre;
     private String marca;
