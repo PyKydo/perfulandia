@@ -47,9 +47,10 @@ public class PedidoServiceImpl implements PedidoService{
 
         for(DetallePedido detalle: pedido.getDetallesPedido()) {
             BigDecimal subtotal = detalle.getPrecio().multiply(BigDecimal.valueOf(detalle.getCantidad()));
-
+            total = total.add(subtotal);
         }
 
+        pedido.setTotal(total);
 
         return convertToDTO(this.pedidoRepository.save(pedido));
     }
