@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -36,7 +37,10 @@ public class Producto {
 
     private String descripcion = "Esta es la descripción de un Producto de Perfulandia";
 
+    @Size(max = 100)
     private String imagenRepresentativaURL = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png"; // Guarda URL de la Imagen.
 
-    private String categoria = "Sin especificar";
+    private Float porcentajeConcentracion; // 3% - 30%
+
+    private String categoria = "Sin especificar"; // Citricas, Florales, Orientales
 }
