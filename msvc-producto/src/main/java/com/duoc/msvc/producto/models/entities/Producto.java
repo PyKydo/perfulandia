@@ -35,12 +35,12 @@ public class Producto {
     @NotNull(message = "El campo precio no puede estar vacio")
     private BigDecimal precio; // Precio unitario
 
-    private String descripcion = "Esta es la descripción de un Producto de Perfulandia";
+    private String descripcion;
 
     @Size(max = 100)
-    private String imagenRepresentativaURL = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png"; // Guarda URL de la Imagen.
+    private String imagenRepresentativaURL; // Guarda URL de la Imagen. Posible cambio a tipo de dato Blob (para tener el archivo directamente).
 
     private Float porcentajeConcentracion; // 3% - 30%
 
-    private String categoria = "Sin especificar"; // Citricas, Florales, Orientales
+    private String categoria = "Sin especificar"; // Citricas, Florales, Orientales, etc.
 }

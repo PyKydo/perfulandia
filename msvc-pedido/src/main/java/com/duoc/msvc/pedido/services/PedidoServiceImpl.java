@@ -3,6 +3,7 @@ package com.duoc.msvc.pedido.services;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
 import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.exceptions.PedidoException;
+import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import com.duoc.msvc.pedido.models.entities.Pedido;
 import com.duoc.msvc.pedido.repositories.PedidoRepository;
 import jakarta.transaction.Transactional;
@@ -10,6 +11,7 @@ import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -41,6 +43,14 @@ public class PedidoServiceImpl implements PedidoService{
 
     @Override
     public PedidoDTO save(Pedido pedido) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for(DetallePedido detalle: pedido.getDetallesPedido()) {
+            BigDecimal subtotal = detalle.getPrecio().multiply(BigDecimal.valueOf(detalle.getCantidad()));
+
+        }
+
+
         return convertToDTO(this.pedidoRepository.save(pedido));
     }
 

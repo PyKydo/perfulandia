@@ -41,7 +41,7 @@ public class Envio {
 
     // TODO: Futura conexión de Envio con Pedido a través de OpenFeign
     @Column(nullable = false)
-    @NotNull(message = "El campo estado id pedido no puede estar vacio")
+    @NotNull(message = "El campo id pedido no puede estar vacio")
     private Long idPedido;
 
 }

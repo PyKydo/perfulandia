@@ -39,6 +39,7 @@ public class EnvioServicelmpl implements EnvioService{
     public EnvioDTO convertToDTO(Envio envio) {
         EnvioDTO dto = new EnvioDTO();
         dto.setCiudad(envio.getCiudad());
+        dto.setDireccion(envio.getDireccion());
         dto.setComuna(envio.getComuna());
         dto.setEstado(envio.getEstado());
         dto.setRegion(envio.getRegion());
