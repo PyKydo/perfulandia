@@ -3,9 +3,10 @@ package com.duoc.msvc.pedido.services;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
 import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.exceptions.PedidoException;
-import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import com.duoc.msvc.pedido.models.entities.Pedido;
 import com.duoc.msvc.pedido.repositories.PedidoRepository;
+import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +33,9 @@ public class PedidoServiceImpl implements PedidoService{
 
     @Override
     public PedidoDTO findById(Long id) {
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos"));
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow(
+                () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
+        );
         return convertToDTO(pedido);
     }
 
@@ -42,9 +44,9 @@ public class PedidoServiceImpl implements PedidoService{
         return convertToDTO(this.pedidoRepository.save(pedido));
     }
 
-    private PedidoDTO convertToDTO(Pedido pedido) {
+    @Override
+    public PedidoDTO convertToDTO(Pedido pedido) {
         PedidoDTO dto = new PedidoDTO();
-        dto.setIdPedido(pedido.getIdPedido());
         dto.setIdCliente(pedido.getIdCliente());
         dto.setTotal(pedido.getTotal());
         dto.setEstado(pedido.getEstado());
@@ -55,6 +57,7 @@ public class PedidoServiceImpl implements PedidoService{
                     DetallePedidoDTO detalleDTO = new DetallePedidoDTO();
                     detalleDTO.setIdProducto(detalle.getIdProducto());
                     detalleDTO.setCantidad(detalle.getCantidad());
+                    detalleDTO.setPrecio(detalle.getPrecio());
 
                     return detalleDTO;
                 })

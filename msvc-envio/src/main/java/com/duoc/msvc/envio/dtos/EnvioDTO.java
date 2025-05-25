@@ -1,12 +1,14 @@
 package com.duoc.msvc.envio.dtos;
 
+import lombok.*;
+
+@Getter @Setter @ToString
+@AllArgsConstructor @NoArgsConstructor
 public class EnvioDTO {
-    private Long idEnvio;
     private String direccion;
     private String ciudad;
     private String comuna;
     private String region;
     private String codigoPostal;
-    private String estadoEnvio;
-    private String direccionEnvio;
+    private String estado;
 }

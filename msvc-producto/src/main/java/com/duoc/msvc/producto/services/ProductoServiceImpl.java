@@ -48,4 +48,28 @@ public class ProductoServiceImpl implements ProductoService{
         dto.setCategoria(producto.getCategoria());
         return dto;
     }
+
+    @Override
+    public void deleteById(Long id){
+        this.productoRepository.deleteById(id);
+    }
+
+    @Override
+    public ProductoDTO updateById(Long id, Producto producto) {
+        Producto productoExistente = this.productoRepository.findById(id).orElseThrow(
+                () -> new ProductoException("El producto con el id "+id+" no se puede actualizar porque no existe")
+        );
+
+        productoExistente.setCategoria(producto.getCategoria());
+        productoExistente.setDescripcion(producto.getDescripcion());
+        productoExistente.setNombre(producto.getNombre());
+        productoExistente.setMarca(producto.getMarca());
+        productoExistente.setPrecio(producto.getPrecio());
+        productoExistente.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
+
+        return convertToDTO(this.productoRepository.save(productoExistente));
+
+
+
+    }
 }

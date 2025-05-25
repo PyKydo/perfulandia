@@ -19,8 +19,10 @@ public class DetallePedido {
     @Column(name = "id_detalle_pedido")
     private Long idDetallePedido;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido")
+    @JsonIgnore
     private Pedido pedido;
 
     @Column(nullable = false)

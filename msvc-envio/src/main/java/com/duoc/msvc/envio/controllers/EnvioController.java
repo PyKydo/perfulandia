@@ -1,6 +1,7 @@
 package com.duoc.msvc.envio.controllers;
 
 
+import com.duoc.msvc.envio.dtos.EnvioDTO;
 import com.duoc.msvc.envio.models.entities.Envio;
 import com.duoc.msvc.envio.services.EnvioService;
 import jakarta.validation.Valid;
@@ -21,17 +22,17 @@ public class EnvioController {
     private EnvioService envioService;
 
     @GetMapping
-    public ResponseEntity<List<Envio>> findAll(){
+    public ResponseEntity<List<EnvioDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(envioService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Envio> findById(@PathVariable Long id){
+    public ResponseEntity<EnvioDTO> findById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(envioService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Envio> save(@Valid @RequestBody Envio envio){
+    public ResponseEntity<EnvioDTO> save(@Valid @RequestBody Envio envio){
         return ResponseEntity.status(HttpStatus.CREATED).body(envioService.save(envio));
     }
 }

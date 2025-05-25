@@ -11,5 +11,7 @@ public interface ProductoService {
     ProductoDTO findById(Long id);
     ProductoDTO save(Producto producto);
     ProductoDTO convertToDTO(Producto producto);
+    void deleteById(Long id);
+    ProductoDTO updateById(Long id, Producto producto);
     // Producto update(Long id, Producto producto)
 }

@@ -10,7 +10,6 @@ import java.util.List;
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
 public class PedidoDTO {
-    private Long idPedido;
     private Long idCliente;
     private BigDecimal total;
     private String estado;

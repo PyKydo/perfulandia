@@ -1,7 +1,8 @@
 package com.duoc.msvc.sucursal.controllers;
 
 
-import com.duoc.msvc.sucursal.models.Sucursal;
+import com.duoc.msvc.sucursal.dtos.SucursalDTO;
+import com.duoc.msvc.sucursal.models.entities.Sucursal;
 import com.duoc.msvc.sucursal.services.SucursalService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +22,20 @@ public class SucursalController {
     private SucursalService sucursalService;
 
     @GetMapping
-    public ResponseEntity<List<Sucursal>> findAll(){
-        return ResponseEntity.status(HttpStatus.OK).body(sucursalService.findAll());
+    public ResponseEntity<List<SucursalDTO>> findAll(){
+        return ResponseEntity.status(HttpStatus.OK).body(this.sucursalService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Sucursal> findById(@PathVariable Long id){
-        return ResponseEntity.status(HttpStatus.OK).body(sucursalService.findById(id));
+    public ResponseEntity<SucursalDTO> findById(@PathVariable Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(this.sucursalService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Sucursal> save(@Valid @RequestBody Sucursal sucursal){
-        return ResponseEntity.status(HttpStatus.CREATED).body(sucursalService.save(sucursal));
+    public ResponseEntity<SucursalDTO> save(@Valid @RequestBody Sucursal sucursal){
+        if (sucursal.getInventarios() != null) {
+            sucursal.getInventarios().forEach(inventario -> inventario.setSucursal(sucursal));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.sucursalService.save(sucursal));
     }
 }

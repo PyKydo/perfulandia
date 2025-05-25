@@ -11,4 +11,5 @@ public interface PedidoService{
     List<PedidoDTO> findByIdCliente(Long idCliente);
     PedidoDTO findById(Long id);
     PedidoDTO save(Pedido pedido);
+    PedidoDTO convertToDTO(Pedido pedido);
 }

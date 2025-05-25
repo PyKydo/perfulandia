@@ -1,4 +1,4 @@
-package com.duoc.msvc.sucursal.models;
+package com.duoc.msvc.sucursal.models.entities;
 
 
 import jakarta.persistence.*;
@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Sucursal {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_sucursal")
@@ -22,7 +21,7 @@ public class Sucursal {
 
     @Column(nullable = false)
     @NotBlank(message = "El campo direccion no puede estar vacio")
-    private String dirección;
+    private String direccion;
 
     @Column(nullable = false)
     @NotBlank(message = "El campo región no puede estar vacio")
@@ -41,5 +40,5 @@ public class Sucursal {
     private String horariosAtencion;
 
     @OneToMany(mappedBy = "sucursal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Inventario> inventariosSucursal =  new ArrayList<>();
+    private List<Inventario> inventarios =  new ArrayList<>();
 }

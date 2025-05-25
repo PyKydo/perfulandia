@@ -16,7 +16,6 @@ import java.util.List;
 @RequestMapping("/api/v1/pedidos")
 @Validated
 public class PedidoController {
-
     @Autowired
     private PedidoService pedidoService;
 
@@ -32,6 +31,9 @@ public class PedidoController {
 
     @PostMapping
     public ResponseEntity<PedidoDTO> save(@Valid @RequestBody Pedido pedido){
+        if (pedido.getDetallesPedido() != null) {
+            pedido.getDetallesPedido().forEach(detalle -> detalle.setPedido(pedido));
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(this.pedidoService.save(pedido));
     }
 

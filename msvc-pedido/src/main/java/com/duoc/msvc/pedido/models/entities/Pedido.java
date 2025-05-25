@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,8 +29,7 @@ public class Pedido {
     private Long idPedido;
 
     @Column(nullable = false)
-    @NotNull(message = "El campo idCliente no puede estar vacio")
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "pedido",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallesPedido = new ArrayList<>();
 
     @Column(nullable = false)
@@ -36,7 +37,7 @@ public class Pedido {
     private Long idCliente;
 
     @Column(nullable = false)
-    @Positive
+    @PositiveOrZero
     @NotNull(message = "El campo total no puede estar vacio")
     private BigDecimal total; // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
 
