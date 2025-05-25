@@ -36,6 +36,25 @@ public class SucursalServicelmpl implements SucursalService{
     }
 
     @Override
+    public SucursalDTO updateById(Long id, Sucursal sucursal) {
+        Sucursal newSucursal = sucursalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada con id: " + id));
+
+        newSucursal.setDireccion(sucursal.getDireccion());
+        newSucursal.setRegion(sucursal.getRegion());
+        newSucursal.setComuna(sucursal.getComuna());
+        newSucursal.setCantidadPersonal(sucursal.getCantidadPersonal());
+        newSucursal.setHorariosAtencion(sucursal.getHorariosAtencion());
+
+        return convertToDTO(sucursalRepository.save(newSucursal));
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        this.sucursalRepository.deleteById(id);
+    }
+
+    @Override
     public SucursalDTO convertToDTO(Sucursal sucursal) {
         SucursalDTO dto = new SucursalDTO();
         dto.setRegion(sucursal.getRegion());

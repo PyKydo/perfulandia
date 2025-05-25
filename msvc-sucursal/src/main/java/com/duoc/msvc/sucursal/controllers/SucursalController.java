@@ -38,4 +38,15 @@ public class SucursalController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(this.sucursalService.save(sucursal));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SucursalDTO> updateById(@PathVariable Long id, @RequestBody Sucursal sucursal){
+        return ResponseEntity.status(HttpStatus.OK).body(this.sucursalService.updateById(id, sucursal));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+        sucursalService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

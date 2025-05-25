@@ -9,5 +9,7 @@ public interface SucursalService {
     List<SucursalDTO> findAll();
     SucursalDTO findById(Long id);
     SucursalDTO save(Sucursal sucursal);
+    SucursalDTO updateById(Long id, Sucursal sucursal);
+    void deleteById(Long id);
     SucursalDTO convertToDTO(Sucursal sucursal);
 }
