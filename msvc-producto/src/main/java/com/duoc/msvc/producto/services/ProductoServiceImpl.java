@@ -4,6 +4,7 @@ import com.duoc.msvc.producto.dtos.ProductoDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ public class ProductoServiceImpl implements ProductoService{
         return this.productoRepository.findByCategoria(categoria).stream().map(this::convertToDTO).toList();
     }
 
+    @Transactional
     @Override
     public ProductoDTO save(Producto producto) {
         return convertToDTO(this.productoRepository.save(producto));
