@@ -39,3 +39,6 @@ build/
 
 ### Database ###
 .db
+.mv.db
+.trace.db
+/data
