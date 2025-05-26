@@ -7,7 +7,10 @@ import com.duoc.msvc.envio.repositories.EnvioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class EnvioServicelmpl implements EnvioService{
@@ -46,5 +49,26 @@ public class EnvioServicelmpl implements EnvioService{
         dto.setCodigoPostal(envio.getCodigoPostal());
 
         return dto;
+    }
+
+    public BigDecimal getCostoEnvio() {
+        Random random = new Random();
+
+        int distanciaKm = random.nextInt(96) + 5; // 5 a 100
+
+        double pesoRandom = 0.5 + (20.0 - 0.5) * random.nextDouble();
+        BigDecimal pesoKg = BigDecimal.valueOf(pesoRandom).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal base = new BigDecimal("2000");
+        BigDecimal tarifaPorKm = new BigDecimal("60");
+        BigDecimal tarifaPorKg = new BigDecimal("300");
+
+        BigDecimal costoDistancia = tarifaPorKm.multiply(BigDecimal.valueOf(distanciaKm));
+        BigDecimal costoPeso = tarifaPorKg.multiply(pesoKg);
+        BigDecimal costoTotal = base.add(costoDistancia).add(costoPeso);
+
+        costoTotal = costoTotal.setScale(0, RoundingMode.HALF_UP);
+
+        return costoTotal;
     }
 }

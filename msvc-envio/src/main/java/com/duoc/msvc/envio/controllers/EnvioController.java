@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -34,5 +35,10 @@ public class EnvioController {
     @PostMapping
     public ResponseEntity<EnvioDTO> save(@Valid @RequestBody Envio envio){
         return ResponseEntity.status(HttpStatus.CREATED).body(envioService.save(envio));
+    }
+
+    @GetMapping
+    public ResponseEntity<BigDecimal> getCostoEnvio(){
+        return ResponseEntity.status(HttpStatus.OK).body(envioService.getCostoEnvio());
     }
 }

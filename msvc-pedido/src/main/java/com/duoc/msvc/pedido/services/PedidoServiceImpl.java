@@ -1,14 +1,12 @@
 package com.duoc.msvc.pedido.services;
 
+import com.duoc.msvc.pedido.clients.EnvioClient;
 import com.duoc.msvc.pedido.clients.ProductoClient;
 import com.duoc.msvc.pedido.clients.SucursalClient;
 import com.duoc.msvc.pedido.clients.UsuarioClient;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
 import com.duoc.msvc.pedido.dtos.PedidoDTO;
-import com.duoc.msvc.pedido.dtos.pojos.InventarioClientDTO;
-import com.duoc.msvc.pedido.dtos.pojos.ProductoClientDTO;
-import com.duoc.msvc.pedido.dtos.pojos.SucursalClientDTO;
-import com.duoc.msvc.pedido.dtos.pojos.UsuarioClientDTO;
+import com.duoc.msvc.pedido.dtos.pojos.*;
 import com.duoc.msvc.pedido.exceptions.PedidoException;
 import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import com.duoc.msvc.pedido.models.entities.Pedido;
@@ -33,6 +31,8 @@ public class PedidoServiceImpl implements PedidoService{
     private ProductoClient productoClient;
     @Autowired
     private SucursalClient sucursalClient;
+    @Autowired
+    private EnvioClient envioClient;
 
     @Override
     public List<PedidoDTO> findAll() {
@@ -90,6 +90,7 @@ public class PedidoServiceImpl implements PedidoService{
         }
 
         pedido.setTotal(total);
+        pedido.setCostoEnvio(envioClient.getCostoEnvio());
         Pedido saved = pedidoRepository.save(pedido);
 
         return convertToDTO(saved);
@@ -102,10 +103,12 @@ public class PedidoServiceImpl implements PedidoService{
         UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(pedido.getIdCliente());
 
         PedidoDTO dto = new PedidoDTO();
+        dto.setDireccion(usuarioClientDTO.getDireccion());
         dto.setNombreCliente(usuarioClientDTO.getNombre());
         dto.setApellidoCliente(usuarioClientDTO.getApellido());
         dto.setCorreo(usuarioClientDTO.getCorreo());
 
+        dto.setCostoEnvio(pedido.getCostoEnvio());
         dto.setTotal(pedido.getTotal());
         dto.setEstado(pedido.getEstado());
 

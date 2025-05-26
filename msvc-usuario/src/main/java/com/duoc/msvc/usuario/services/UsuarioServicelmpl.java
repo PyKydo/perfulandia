@@ -59,6 +59,8 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public UsuarioDTO convertToDTO(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();
+        dto.setCiudad(usuario.getCiudad());
+        dto.setDireccion(usuario.getDireccion());
         dto.setNombre(usuario.getNombre());
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());

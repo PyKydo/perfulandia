@@ -35,6 +35,9 @@ public class Pedido {
     private BigDecimal total; // Dato calculado: sumar todos los detalles (cantidad * precio)
     // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
 
+    @PositiveOrZero
+    private BigDecimal costoEnvio;
+
     @Column(nullable = false)
     private String estado = "En proceso"; // En proceso, Pagado, Enviado
 
