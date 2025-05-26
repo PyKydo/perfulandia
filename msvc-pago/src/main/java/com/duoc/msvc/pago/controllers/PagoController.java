@@ -1,5 +1,6 @@
 package com.duoc.msvc.pago.controllers;
 
+import com.duoc.msvc.pago.dtos.PagoDTO;
 import com.duoc.msvc.pago.models.Pago;
 import com.duoc.msvc.pago.services.PagoService;
 import jakarta.validation.Valid;
@@ -19,22 +20,22 @@ public class PagoController {
     private PagoService pagoService;
 
     @GetMapping
-    public ResponseEntity<List<Pago>> findAll(){
+    public ResponseEntity<List<PagoDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(pagoService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pago> findById(@PathVariable Long id){
+    public ResponseEntity<PagoDTO> findById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(pagoService.findById(id));
     }
 
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Pago>> findByEstado(@PathVariable String estado){
+    public ResponseEntity<List<PagoDTO>> findByEstado(@PathVariable String estado){
         return ResponseEntity.status(HttpStatus.OK).body(pagoService.findByEstado(estado));
     }
 
     @PostMapping
-    public ResponseEntity<Pago> save(@Valid @RequestBody Pago pago){
+    public ResponseEntity<PagoDTO> save(@Valid @RequestBody Pago pago){
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.save(pago));
     }
 }

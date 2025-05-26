@@ -1,12 +1,14 @@
 package com.duoc.msvc.pago.services;
 
+import com.duoc.msvc.pago.dtos.PagoDTO;
 import com.duoc.msvc.pago.models.Pago;
 
 import java.util.List;
 
 public interface PagoService{
-    List<Pago> findAll();
-    List<Pago> findByEstado(String estado);
-    Pago findById(Long id);
-    Pago save(Pago pago);
+    List<PagoDTO> findAll();
+    List<PagoDTO> findByEstado(String estado);
+    PagoDTO findById(Long id);
+    PagoDTO save(Pago pago);
+    PagoDTO convertToDTO(Pago pago);
 }
