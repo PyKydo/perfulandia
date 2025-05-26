@@ -1,4 +1,4 @@
-package com.duoc.msvc.sucursal.dtos;
+package com.duoc.msvc.pedido.dtos.pojos;
 
 import lombok.*;
 
@@ -6,12 +6,12 @@ import java.util.List;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-public class SucursalDTO {
+public class SucursalClientDTO {
     private Long idSucursal;
     private String direccion;
     private String region;
     private String comuna;
     private Integer cantidadPersonal;
     private String horariosAtencion;
-    private List<InventarioDTO> inventarios;
+    private List<InventarioClientDTO> inventarios;
 }

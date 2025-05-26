@@ -19,7 +19,6 @@ public class DetallePedido {
     @Column(name = "id_detalle_pedido")
     private Long idDetallePedido;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pedido")
     @JsonIgnore
@@ -30,10 +29,13 @@ public class DetallePedido {
     private Long idProducto;
 
     @Column(nullable = false)
-    private Integer cantidad;
+    @NotNull(message = "El campo idSucursal no puede estar vacio")
+    private Long idSucursal;
 
     @Column(nullable = false)
-    private BigDecimal precio; // al momento de la compra
+    private Integer cantidad;
+
+    private BigDecimal precio; // Precio historico (al momento de la compra)
 
 
 

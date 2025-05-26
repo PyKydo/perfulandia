@@ -39,16 +39,16 @@ public class UsuarioServicelmpl implements UsuarioService{
 
     @Override
     public UsuarioDTO updateById(Long id, Usuario usuario) {
-        Usuario oldUsuario = usuarioRepository.findById(id)
+        Usuario newUsuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("El oldUsuario con el id "+id+" no se puede actualizar porque no existe"));
 
-        oldUsuario.setNombre(usuario.getNombre());
-        oldUsuario.setApellido(usuario.getApellido());
-        oldUsuario.setCorreo(usuario.getCorreo());
-        oldUsuario.setRol(usuario.getRol());
-        oldUsuario.setTelefono(usuario.getTelefono());
+        newUsuario.setNombre(usuario.getNombre());
+        newUsuario.setApellido(usuario.getApellido());
+        newUsuario.setCorreo(usuario.getCorreo());
+        newUsuario.setRol(usuario.getRol());
+        newUsuario.setTelefono(usuario.getTelefono());
 
-        return convertToDTO(usuarioRepository.save(oldUsuario));
+        return convertToDTO(usuarioRepository.save(newUsuario));
     }
 
     @Override

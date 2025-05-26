@@ -11,5 +11,7 @@ public interface SucursalService {
     SucursalDTO save(Sucursal sucursal);
     SucursalDTO updateById(Long id, Sucursal sucursal);
     void deleteById(Long id);
+    SucursalDTO findByBestStock(Long idProducto);
+    void updateStock(Long idInventario, Long idSucursal, Integer nuevoStock);
     SucursalDTO convertToDTO(Sucursal sucursal);
 }

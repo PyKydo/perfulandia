@@ -16,11 +16,10 @@ public class Inventario {
     @Column(name = "id_inventario")
     private Long idInventario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sucursal")
     private Sucursal sucursal;
 
-    // TODO: Futura conexión de Sucursal con Producto a través de OpenFeign
     @Column(nullable = false)
     private Long idProducto;
 

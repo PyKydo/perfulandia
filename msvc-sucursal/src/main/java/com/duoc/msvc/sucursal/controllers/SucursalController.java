@@ -44,9 +44,24 @@ public class SucursalController {
         return ResponseEntity.status(HttpStatus.OK).body(this.sucursalService.updateById(id, sucursal));
     }
 
+    @PutMapping("/{idSuc}/inventario/{idInv}/stock")
+    public ResponseEntity<Void> updateInventarioStock(
+            @PathVariable("idSuc") Long idSucursal,
+            @PathVariable("idInv") Long idInventario,
+            @RequestParam("nuevoStock") Integer nuevoStock
+    ) {
+        sucursalService.updateStock(idSucursal, idInventario, nuevoStock);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id){
         sucursalService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/mejor-stock/{idProducto}")
+    public ResponseEntity<SucursalDTO> bestStockByIdProducto(@PathVariable Long idProducto){
+        return ResponseEntity.status(HttpStatus.OK).body(sucursalService.findByBestStock(idProducto));
     }
 }

@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor @NoArgsConstructor
 public class DetallePedidoDTO {
     private Long idProducto;
+    private String nombreProducto;
+    private String marcaProducto;
     private Integer cantidad;
     private BigDecimal precio;
 }

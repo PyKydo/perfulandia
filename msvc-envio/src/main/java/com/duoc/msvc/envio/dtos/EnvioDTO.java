@@ -11,4 +11,5 @@ public class EnvioDTO {
     private String region;
     private String codigoPostal;
     private String estado;
+    private Long idPedido;
 }
