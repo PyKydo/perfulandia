@@ -82,8 +82,7 @@ El sistema está compuesto por los siguientes microservicios:
 
 1. **Creación de Pedido**:
    - Cliente realiza pedido a través del servicio de usuarios
-   - Se verifica disponibilidad en el servicio de productos
-   - Se valida la sucursal en el servicio de sucursales
+   - Se verifica disponibilidad de cada producto en los inventarios del servicio de sucursal
    - Se crea el pedido en el servicio de pedidos
    - Se genera el pago en el servicio de pagos
    - Se crea el envío en el servicio de envíos
