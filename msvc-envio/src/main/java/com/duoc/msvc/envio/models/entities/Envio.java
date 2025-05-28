@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity @Table(name = "envios")
 @ToString @Getter @Setter
@@ -18,7 +19,6 @@ public class Envio {
     private Long idEnvio;
 
     @Column(nullable = false)
-    @NotNull(message = "El campo costo no puede estar vacio")
     private BigDecimal costo;
 
     @Column(nullable = false)
@@ -42,14 +42,11 @@ public class Envio {
     private String codigoPostal;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo estado no puede estar vacio")
     private String estado;
 
-    // TODO: Futura conexión de Envio con Pedido a través de OpenFeign
-    @Column(nullable = false)
-    @NotNull(message = "El campo idPedido no puede estar vacio")
-    private Long idPedido;
+    private LocalDateTime fechaEstimadaEntrega;
 
-    private BigDecimal total;
+    @Column(nullable = false)
+    private Long idPedido;
 
 }

@@ -11,5 +11,6 @@ public interface EnvioService {
     EnvioDTO findById(Long id);
     EnvioDTO save(Envio envio);
     BigDecimal getCostoEnvio();
+    String updateEstadoById(Long id, String nuevoEstado);
     EnvioDTO convertToDTO(Envio envio);
 }

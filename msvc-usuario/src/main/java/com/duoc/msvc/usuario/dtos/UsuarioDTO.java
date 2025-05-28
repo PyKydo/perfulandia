@@ -5,11 +5,14 @@ import lombok.*;
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
 public class UsuarioDTO {
+    private Long idCliente;
     private String nombre;
     private String apellido;
+    private String region;
+    private String comuna;
     private String ciudad;
+    private String codigoPostal;
     private String direccion;
     private String correo;
-    private String rol;
     private String telefono;
 }

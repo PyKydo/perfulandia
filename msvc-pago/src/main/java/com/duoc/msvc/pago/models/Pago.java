@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -25,16 +26,18 @@ public class Pago {
 
     @Column(nullable = false)
     @NotBlank(message = "El campo metodo no puede estar vacio")
-    private String metodo; // Efectivo, Débito, Crédito, etc.
+    private String metodo; // Débito, Crédito, WebPay, etc.
 
     @Column(nullable = false)
-    @Positive
-    @NotNull(message = "El campo monto no puede estar vacio")
+    @PositiveOrZero
     private BigDecimal monto;
 
-    private String estado = "Pendiente"; // Pendiente, Completado, Rechazado, etc.
+    private String estado; // Pendiente, Completado, Rechazado, etc.
 
     @Column(updatable = false)
-    private String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    private String fecha;
+
+    @Column(updatable = false, nullable = false)
+    private Long idPedido;
 
 }

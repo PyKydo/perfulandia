@@ -9,6 +9,7 @@ import java.util.List;
 public interface PedidoService{
     List<PedidoDTO> findAll();
     List<PedidoDTO> findByIdCliente(Long idCliente);
+    String updateEstadoById(Long idPedido, String nuevoEstado);
     PedidoDTO findById(Long id);
     PedidoDTO save(Pedido pedido);
     PedidoDTO convertToDTO(Pedido pedido);

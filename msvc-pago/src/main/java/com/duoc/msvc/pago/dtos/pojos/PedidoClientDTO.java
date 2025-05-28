@@ -1,4 +1,4 @@
-package com.duoc.msvc.pedido.dtos;
+package com.duoc.msvc.pago.dtos.pojos;
 
 
 import lombok.*;
@@ -8,13 +8,12 @@ import java.util.List;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-public class PedidoDTO {
-    private Long idCliente;
+public class PedidoClientDTO {
     private String nombreCliente;
     private String apellidoCliente;
     private String direccion;
     private String correo;
-    private List<DetallePedidoDTO> detallesPedido;
+    private List<DetallePedidoClientDTO> detallesPedido;
     private BigDecimal costoEnvio;
     private BigDecimal totalDetalles;
     private BigDecimal montoFinal;

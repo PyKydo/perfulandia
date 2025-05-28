@@ -1,7 +1,9 @@
 package com.duoc.msvc.usuario.services;
 
 
+import com.duoc.msvc.usuario.clients.PedidoClient;
 import com.duoc.msvc.usuario.dtos.UsuarioDTO;
+import com.duoc.msvc.usuario.dtos.pojos.PedidoClientDTO;
 import com.duoc.msvc.usuario.exceptions.UsuarioException;
 import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.repositories.UsuarioRepository;
@@ -16,6 +18,8 @@ public class UsuarioServicelmpl implements UsuarioService{
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private PedidoClient pedidoClient;
 
     @Override
     public List<UsuarioDTO> findAll(){
@@ -40,32 +44,107 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public UsuarioDTO updateById(Long id, Usuario usuario) {
         Usuario newUsuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("El oldUsuario con el id "+id+" no se puede actualizar porque no existe"));
+                .orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
 
-        newUsuario.setNombre(usuario.getNombre());
-        newUsuario.setApellido(usuario.getApellido());
-        newUsuario.setCorreo(usuario.getCorreo());
-        newUsuario.setRol(usuario.getRol());
-        newUsuario.setTelefono(usuario.getTelefono());
+        if (usuario.getNombre() != null) newUsuario.setNombre(usuario.getNombre());
+        if (usuario.getApellido() != null) newUsuario.setApellido(usuario.getApellido());
+        if (usuario.getCorreo() != null) newUsuario.setCorreo(usuario.getCorreo());
+        if (usuario.getTelefono() != null) newUsuario.setTelefono(usuario.getTelefono());
+        if (usuario.getRegion() != null) newUsuario.setRegion(usuario.getRegion());
+        if (usuario.getComuna() != null) newUsuario.setComuna(usuario.getComuna());
+        if (usuario.getCiudad() != null) newUsuario.setCiudad(usuario.getCiudad());
+        if (usuario.getDireccion() != null) newUsuario.setDireccion(usuario.getDireccion());
+        if (usuario.getCodigoPostal() != null) newUsuario.setCodigoPostal(usuario.getCodigoPostal());
 
         return convertToDTO(usuarioRepository.save(newUsuario));
     }
 
     @Override
     public void deleteById(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new UsuarioException("El usuario con id " + id + " no existe");
+        }
         this.usuarioRepository.deleteById(id);
+    }
+
+    @Override
+    public PedidoClientDTO realizarPedido(PedidoClientDTO pedidoClientDTO) {
+        if (pedidoClientDTO == null) {
+            throw new UsuarioException("El pedido no puede ser nulo");
+        }
+        if (pedidoClientDTO.getIdCliente() == null) {
+            throw new UsuarioException("El ID del cliente es requerido");
+        }
+        if (!usuarioRepository.existsById(pedidoClientDTO.getIdCliente())) {
+            throw new UsuarioException("El cliente con id " + pedidoClientDTO.getIdCliente() + " no existe");
+        }
+        if (pedidoClientDTO.getDetallesPedido() == null || pedidoClientDTO.getDetallesPedido().isEmpty()) {
+            throw new UsuarioException("El pedido debe contener al menos un detalle");
+        }
+
+        pedidoClientDTO.setEstado("Pendiente");
+        return this.pedidoClient.save(pedidoClientDTO);
+    }
+
+    @Override
+    public PedidoClientDTO pagarPedido(Long idCliente, Long idPedido) {
+        if (idCliente == null || idPedido == null) {
+            throw new UsuarioException("El ID del cliente y del pedido son requeridos");
+        }
+        if (!usuarioRepository.existsById(idCliente)) {
+            throw new UsuarioException("El cliente con id " + idCliente + " no existe");
+        }
+
+        try {
+            PedidoClientDTO pedidoClientDTO = pedidoClient.findByIdPedido(idPedido);
+            if (pedidoClientDTO == null) {
+                throw new UsuarioException("El pedido con id " + idPedido + " no existe");
+            }
+            if (!pedidoClientDTO.getIdCliente().equals(idCliente)) {
+                throw new UsuarioException("El pedido no pertenece al cliente especificado");
+            }
+            if ("Pagado".equalsIgnoreCase(pedidoClientDTO.getEstado())) {
+                throw new UsuarioException("El pedido ya está pagado");
+            }
+            if ("Cancelado".equalsIgnoreCase(pedidoClientDTO.getEstado())) {
+                throw new UsuarioException("No se puede pagar un pedido cancelado");
+            }
+            
+            String resultado = pedidoClient.updateEstadoByIdPedido(idPedido, "Pagado");
+            if (resultado == null || resultado.trim().isEmpty()) {
+                throw new UsuarioException("No se recibió respuesta del servicio de pedidos");
+            }
+            
+            return pedidoClient.findByIdPedido(idPedido);
+        } catch (Exception e) {
+            throw new UsuarioException("Error al procesar el pago: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<PedidoClientDTO> misPedidos(Long idCliente) {
+        if (idCliente == null) {
+            throw new UsuarioException("El ID del cliente es requerido");
+        }
+        if (!usuarioRepository.existsById(idCliente)) {
+            throw new UsuarioException("El cliente con id " + idCliente + " no existe");
+        }
+        return pedidoClient.findAllByIdCliente(idCliente);
     }
 
     @Override
     public UsuarioDTO convertToDTO(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();
+        dto.setIdCliente(usuario.getIdUsuario());
         dto.setCiudad(usuario.getCiudad());
         dto.setDireccion(usuario.getDireccion());
         dto.setNombre(usuario.getNombre());
         dto.setApellido(usuario.getApellido());
         dto.setCorreo(usuario.getCorreo());
-        dto.setRol(usuario.getRol());
         dto.setTelefono(usuario.getTelefono());
+        dto.setComuna(usuario.getComuna());
+        dto.setRegion(usuario.getRegion());
+        dto.setCodigoPostal(usuario.getCodigoPostal());
         return dto;
     }
 }

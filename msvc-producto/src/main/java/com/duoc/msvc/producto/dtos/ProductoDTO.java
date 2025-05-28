@@ -13,4 +13,5 @@ public class ProductoDTO {
     private String descripcion;
     private String imagenRepresentativaURL;
     private String categoria;
+    private Double porcentajeConcentracion;
 }

@@ -37,8 +37,13 @@ public class EnvioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(envioService.save(envio));
     }
 
-    @GetMapping
+    @GetMapping("/costoEnvio")
     public ResponseEntity<BigDecimal> getCostoEnvio(){
         return ResponseEntity.status(HttpStatus.OK).body(envioService.getCostoEnvio());
+    }
+
+    @PutMapping("/actualizarEstado/{idPedido}/{nuevoEstado}")
+    public ResponseEntity<String>  updateEstadoByIdPedido(@PathVariable Long idPedido, @PathVariable String nuevoEstado){
+        return ResponseEntity.status(HttpStatus.OK).body(envioService.updateEstadoById(idPedido, nuevoEstado));
     }
 }

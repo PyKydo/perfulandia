@@ -10,5 +10,6 @@ import java.util.List;
 public interface PagoRepository extends JpaRepository<Pago, Long> {
 
     List<Pago> findByEstado(String estado);
+    Pago findByIdPedido(Long id);
 
 }

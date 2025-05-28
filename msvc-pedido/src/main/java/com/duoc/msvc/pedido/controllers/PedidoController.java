@@ -26,6 +26,7 @@ public class PedidoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PedidoDTO> findById(@PathVariable Long id){
+
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findById(id));
     }
 
@@ -38,8 +39,13 @@ public class PedidoController {
     }
 
     @GetMapping("/cliente/{id}")
-    public ResponseEntity<List<PedidoDTO>> findByIdCliente(@PathVariable Long id){
+    public ResponseEntity<List<PedidoDTO>> findAllByIdCliente(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findByIdCliente(id));
+    }
+
+    @PutMapping("/{id}/actualizarEstado/{nuevoEstado}")
+    public ResponseEntity<String> updateEstadoById(@PathVariable Long id, @PathVariable String nuevoEstado){
+        return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.updateEstadoById(id, nuevoEstado));
     }
 
 

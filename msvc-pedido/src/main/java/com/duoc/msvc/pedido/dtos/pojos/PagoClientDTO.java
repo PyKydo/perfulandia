@@ -3,16 +3,15 @@ package com.duoc.msvc.pedido.dtos.pojos;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-public class EnvioClientDTO {
-    private BigDecimal costo;
-    private String direccion;
-    private String ciudad;
-    private String comuna;
-    private String region;
-    private String codigoPostal;
+public class PagoClientDTO {
+    private String metodo;
+    private BigDecimal monto;
     private String estado;
+    private String fecha;
     private Long idPedido;
 }

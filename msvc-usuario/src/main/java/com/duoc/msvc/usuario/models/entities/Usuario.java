@@ -42,6 +42,10 @@ public class Usuario {
     private String direccion;
 
     @Column(nullable = false)
+    @NotBlank(message = "El campo codigoPostal no puede estar vacio")
+    private String codigoPostal;
+
+    @Column(nullable = false)
     @Email
     @NotBlank(message = "El campo correo no puede estar vacio")
     private String correo;
@@ -49,10 +53,6 @@ public class Usuario {
     @Column(nullable = false)
     @NotBlank(message = "El campo contraseña no puede estar vacio")
     private String contrasena;
-
-    @Column(nullable = false)
-    @NotBlank(message = "El campo rol no puede estar vacio")
-    private String rol; // Administrador, cliente, etc.
 
     @Digits(integer = 9, fraction = 0)
     private String telefono;

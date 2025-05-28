@@ -29,17 +29,25 @@ public class Pedido {
     private Long idPedido;
 
     @Column(updatable = false) // Para que no se pueda cambiar la fecha
-    private String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")); // Fecha del pedido
+    private String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")); // Fecha de la realización del pedido
 
     @PositiveOrZero
-    private BigDecimal total; // Dato calculado: sumar todos los detalles (cantidad * precio)
-    // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
+    private BigDecimal costoEnvio; // Dato genenerado aleatoriamente desde el msvc-envio para simulación
 
-    @PositiveOrZero
-    private BigDecimal costoEnvio;
+    private String metodoPago;
 
     @Column(nullable = false)
-    private String estado = "En proceso"; // En proceso, Pagado, Enviado
+    @PositiveOrZero
+    private BigDecimal totalDetalles; // Dato calculado: sumar todos los detalles (cantidad * precio)
+
+    // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
+
+    @Column(nullable = false)
+    @PositiveOrZero
+    private BigDecimal montoFinal;  // Dato calculado: suma el totalDetalles con el costoEnvio.
+
+    @Column(nullable = false)
+    private String estado = "Nuevo"; // Nuevo, Pagado, Enviado, Cancelado
 
     @Column(nullable = false)
     @NotNull(message = "El campo idCliente no puede estar vacio")
@@ -48,9 +56,5 @@ public class Pedido {
     @Column(nullable = false)
     @OneToMany(mappedBy = "pedido",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallesPedido = new ArrayList<>();
-
-
-
-
 
 }

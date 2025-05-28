@@ -48,6 +48,7 @@ public class ProductoServiceImpl implements ProductoService{
         dto.setDescripcion(producto.getDescripcion());
         dto.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
         dto.setCategoria(producto.getCategoria());
+        dto.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
         return dto;
     }
 
@@ -68,6 +69,7 @@ public class ProductoServiceImpl implements ProductoService{
         productoExistente.setMarca(producto.getMarca());
         productoExistente.setPrecio(producto.getPrecio());
         productoExistente.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
+        productoExistente.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
 
         return convertToDTO(this.productoRepository.save(productoExistente));
 

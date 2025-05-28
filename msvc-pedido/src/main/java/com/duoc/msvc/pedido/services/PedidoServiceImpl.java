@@ -1,9 +1,6 @@
 package com.duoc.msvc.pedido.services;
 
-import com.duoc.msvc.pedido.clients.EnvioClient;
-import com.duoc.msvc.pedido.clients.ProductoClient;
-import com.duoc.msvc.pedido.clients.SucursalClient;
-import com.duoc.msvc.pedido.clients.UsuarioClient;
+import com.duoc.msvc.pedido.clients.*;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
 import com.duoc.msvc.pedido.dtos.PedidoDTO;
 import com.duoc.msvc.pedido.dtos.pojos.*;
@@ -13,12 +10,12 @@ import com.duoc.msvc.pedido.models.entities.Pedido;
 import com.duoc.msvc.pedido.repositories.PedidoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +30,8 @@ public class PedidoServiceImpl implements PedidoService{
     private SucursalClient sucursalClient;
     @Autowired
     private EnvioClient envioClient;
+    @Autowired
+    private PagoClient pagoClient;
 
     @Override
     public List<PedidoDTO> findAll() {
@@ -49,6 +48,63 @@ public class PedidoServiceImpl implements PedidoService{
     }
 
     @Override
+    public String updateEstadoById(Long idPedido, String nuevoEstado) {
+        Pedido pedido = this.pedidoRepository.findById(idPedido).orElseThrow(
+                () -> new PedidoException("El pedido con el id " + idPedido + " no existe en la base de datos")
+        );
+
+        if (nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
+            throw new PedidoException("El nuevo estado no puede estar vacío");
+        }
+
+        String estadoActual = pedido.getEstado();
+        if ("Pagado".equalsIgnoreCase(estadoActual) && "Pagado".equalsIgnoreCase(nuevoEstado)) {
+            throw new PedidoException("El pedido ya está pagado");
+        }
+
+        try {
+            // Primero actualizamos el estado del pedido
+            pedido.setEstado(nuevoEstado);
+            pedidoRepository.save(pedido);
+
+            // Si el nuevo estado es "Pagado", actualizamos el pago
+            if ("Pagado".equalsIgnoreCase(nuevoEstado)) {
+                try {
+                    String resultado = pagoClient.updateEstadoById(idPedido, "Completado");
+                    if (resultado == null || resultado.trim().isEmpty()) {
+                        throw new PedidoException("No se recibió respuesta del servicio de pagos");
+                    }
+                } catch (Exception e) {
+                    // Si falla la actualización del pago, revertimos el estado del pedido
+                    pedido.setEstado(estadoActual);
+                    pedidoRepository.save(pedido);
+                    throw new PedidoException("Error al actualizar el estado del pago: " + e.getMessage());
+                }
+            } else if ("Cancelado".equalsIgnoreCase(nuevoEstado)) {
+                try {
+                    String resultado = pagoClient.updateEstadoById(idPedido, "Cancelado");
+                    if (resultado == null || resultado.trim().isEmpty()) {
+                        throw new PedidoException("No se recibió respuesta del servicio de pagos");
+                    }
+                } catch (Exception e) {
+                    // Si falla la actualización del pago, revertimos el estado del pedido
+                    pedido.setEstado(estadoActual);
+                    pedidoRepository.save(pedido);
+                    throw new PedidoException("Error al actualizar el estado del pago: " + e.getMessage());
+                }
+            }
+
+            return pedido.getEstado();
+        } catch (Exception e) {
+            // Si ocurre cualquier otro error, revertimos el estado del pedido
+            pedido.setEstado(estadoActual);
+            pedidoRepository.save(pedido);
+            throw new PedidoException("Error al actualizar el estado: " + e.getMessage());
+        }
+    }
+
+
+    @Override
     public PedidoDTO findById(Long id) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(
                 () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
@@ -56,10 +112,18 @@ public class PedidoServiceImpl implements PedidoService{
         return convertToDTO(pedido);
     }
 
-    // TODO: Antes de crear un pedido se debe validar que quede stock (stock > 0) y luego de crear un pedido se debe restar la cantidad de producto
     @Override
     public PedidoDTO save(Pedido pedido) {
-        BigDecimal total = BigDecimal.ZERO;
+        if(pedido == null){
+            throw new IllegalArgumentException("El pedido no puede ser nulo");
+        }
+        if (pedido.getDetallesPedido() == null || pedido.getDetallesPedido().isEmpty()) {
+            throw new IllegalArgumentException("El pedido debe contener al menos un detalle");
+        }
+        if (pedido.getMetodoPago() == null || pedido.getMetodoPago().trim().isEmpty()) {
+            throw new IllegalArgumentException("Debe especificar un método de pago válido");
+        }
+        BigDecimal totalDetalles = BigDecimal.ZERO;
 
         for (DetallePedido detalle : pedido.getDetallesPedido()) {
             ProductoClientDTO productoClientDTO = productoClient.getProductoById(detalle.getIdProducto());
@@ -76,12 +140,13 @@ public class PedidoServiceImpl implements PedidoService{
             }
 
             BigDecimal subtotal = productoClientDTO.getPrecio().multiply(BigDecimal.valueOf(detalle.getCantidad()));
-            total = total.add(subtotal);
+            totalDetalles = totalDetalles.add(subtotal);
 
             detalle.setPrecio(productoClientDTO.getPrecio());
             detalle.setIdSucursal(sucursalClientDTO.getIdSucursal());
 
-            int nuevoStock = inventario.getStock() - detalle.getCantidad();
+            Integer nuevoStock = inventario.getStock() - detalle.getCantidad();
+
             sucursalClient.updateInventarioStock(
                     sucursalClientDTO.getIdSucursal(),         // idSuc
                     inventario.getIdInventario(),              // idInv
@@ -89,9 +154,37 @@ public class PedidoServiceImpl implements PedidoService{
             );
         }
 
-        pedido.setTotal(total);
-        pedido.setCostoEnvio(envioClient.getCostoEnvio());
+        BigDecimal costoEnvio = envioClient.getCostoEnvio();
+        BigDecimal montoFinal = totalDetalles.add(costoEnvio);
+
+        pedido.setCostoEnvio(costoEnvio);
+
+        pedido.setTotalDetalles(totalDetalles);
+        pedido.setMontoFinal(montoFinal);
+
         Pedido saved = pedidoRepository.save(pedido);
+
+        PagoClientDTO pagoClientDTO = new PagoClientDTO();
+        pagoClientDTO.setIdPedido(saved.getIdPedido());
+        pagoClientDTO.setMonto(montoFinal);
+        pagoClientDTO.setMetodo(saved.getMetodoPago());
+
+        pagoClient.save(pagoClientDTO);
+
+        EnvioClientDTO envioClientDTO = new EnvioClientDTO();
+
+        envioClientDTO.setIdPedido(saved.getIdPedido());
+
+        UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(saved.getIdCliente());
+
+        envioClientDTO.setCiudad(usuarioClientDTO.getCiudad());
+        envioClientDTO.setRegion(usuarioClientDTO.getRegion());
+        envioClientDTO.setComuna(usuarioClientDTO.getComuna());
+        envioClientDTO.setCodigoPostal(usuarioClientDTO.getCodigoPostal());
+        envioClientDTO.setDireccion(usuarioClientDTO.getDireccion());
+        envioClientDTO.setCosto(pedido.getCostoEnvio());
+
+        envioClient.save(envioClientDTO);
 
         return convertToDTO(saved);
 
@@ -103,16 +196,18 @@ public class PedidoServiceImpl implements PedidoService{
         UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(pedido.getIdCliente());
 
         PedidoDTO dto = new PedidoDTO();
+        dto.setIdCliente(usuarioClientDTO.getIdCliente());
         dto.setDireccion(usuarioClientDTO.getDireccion());
         dto.setNombreCliente(usuarioClientDTO.getNombre());
         dto.setApellidoCliente(usuarioClientDTO.getApellido());
         dto.setCorreo(usuarioClientDTO.getCorreo());
 
         dto.setCostoEnvio(pedido.getCostoEnvio());
-        dto.setTotal(pedido.getTotal());
+        dto.setTotalDetalles(pedido.getTotalDetalles());
+        dto.setMontoFinal(pedido.getMontoFinal());
+        dto.setMetodoPago(pedido.getMetodoPago());
         dto.setEstado(pedido.getEstado());
 
-        // Convertir detalles a DTOs
         List<DetallePedidoDTO> detallesDTO = pedido.getDetallesPedido().stream()
                 .map(detalle -> {
                     ProductoClientDTO productoClientDTO = productoClient.getProductoById(detalle.getIdProducto());
