@@ -97,7 +97,7 @@ El sistema está compuesto por los siguientes microservicios:
 ## Tecnologías Utilizadas
 
 - Java 21
-- Spring Boot 3.x
+- Spring Boot 3
 - Spring Cloud
 - OpenFeign
 - JPA/Hibernate
@@ -110,13 +110,12 @@ El sistema está compuesto por los siguientes microservicios:
 
 Cada microservicio tiene su propio archivo `application.properties` con la configuración necesaria:
 
-- Conexión a base de datos
+- Conexión y configuración con la base de datos
 - Puertos
-- URLs de los otros microservicios
 
 ## Notas Importantes
 
-- Cada microservicio tiene su propia base de datos
+- Cada microservicio utiliza H2 Database como motor de base de datos
 - La comunicación entre microservicios se realiza mediante OpenFeign
 - Los estados de los pedidos son: Nuevo, Pagado, Enviado, Cancelado
 - Los estados de los pagos son: Pendiente, Completado, Cancelado
