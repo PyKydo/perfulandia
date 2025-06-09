@@ -34,14 +34,30 @@ public class LoadDatabase implements CommandLineRunner {
             producto.setNombre(faker.commerce().productName());
             producto.setMarca(faker.company().name());
             String precioStr = faker.commerce().price(1000, 10000);
-            BigDecimal precio = new BigDecimal(precioStr);
+            BigDecimal precio = new BigDecimal(precioStr.replace(",",""));
             producto.setPrecio(precio);
             producto.setDescripcion(faker.lorem().sentence());
             producto.setPorcentajeConcentracion(faker.number().randomDouble(0,1,40));
 
-            logger.info("prueba {}",producto.getNombre());
+            logger.info("prueba 1 Nombre {}",producto.getNombre());
             producto = productoRepository.save(producto);
-            logger.info("Hola prueba 2 {}",producto);
+            logger.info("prueba 1 exitosa {}",producto);
+
+            logger.info("prueba 2 Nombre Compañia {}",producto.getMarca());
+            producto = productoRepository.save(producto);
+            logger.info("prueba 2 exitosa {}",producto);
+
+            logger.info("prueba 3 Precio de Producto {}",producto.getPrecio());
+            producto = productoRepository.save(producto);
+            logger.info("prueba 3 exitosa {}",producto);
+
+            logger.info("prueba 4 Descripcion de Producto  {}",producto.getDescripcion());
+            producto = productoRepository.save(producto);
+            logger.info("prueba 4 exitosa {}",producto);
+
+            logger.info("prueba 5  {}",producto.getPorcentajeConcentracion());
+            producto = productoRepository.save(producto);
+            logger.info("prueba 5 exitosa {}",producto);
         }
     }
     }
