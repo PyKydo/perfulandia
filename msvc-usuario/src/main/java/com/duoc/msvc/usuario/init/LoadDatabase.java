@@ -35,9 +35,9 @@ public class LoadDatabase implements CommandLineRunner {
                 usuario.setComuna(faker.address().cityName());
                 usuario.setCorreo(faker.internet().username()+"@gmail.com");
                 usuario.setContrasena(faker.internet().password());
-                usuario.setTelefono(faker.phoneNumber().cellPhone());
+                usuario.setTelefono(faker.phoneNumber().phoneNumberNational());
                 usuario.setDireccion(faker.address().streetAddress());
-                usuario.setCodigoPostal(faker.address().zipCodeByState(usuario.getRegion()));
+                usuario.setCodigoPostal(faker.address().zipCode());
 
                 logger.info("El nombre del usuario que agregaste es {}", usuario.getNombre());
                 usuario = usuarioRepository.save(usuario);

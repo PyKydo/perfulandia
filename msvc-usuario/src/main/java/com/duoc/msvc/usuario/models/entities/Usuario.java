@@ -54,6 +54,6 @@ public class Usuario {
     @NotBlank(message = "El campo contraseña no puede estar vacio")
     private String contrasena;
 
-    @Digits(integer = 9, fraction = 0)
+    //@Digits(integer = 9, fraction = 0)
     private String telefono;
 }
