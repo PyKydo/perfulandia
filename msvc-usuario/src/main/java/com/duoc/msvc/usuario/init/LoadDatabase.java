@@ -41,7 +41,43 @@ public class LoadDatabase implements CommandLineRunner {
 
                 logger.info("El nombre del usuario que agregaste es {}", usuario.getNombre());
                 usuario = usuarioRepository.save(usuario);
-                logger.info("El usuario creado es: {}", usuario);
+                logger.info("El Nombre usuario creado es: {}", usuario);
+
+                logger.info("El apellido del usuario que agregaste es {}", usuario.getApellido());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("El Apellido creado es: {}", usuario);
+
+                logger.info("La ciudad del usuario que agregaste es {}", usuario.getCiudad());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("La Ciudad agregada del usuario creado es: {}", usuario);
+
+                logger.info("La region del usuario que agregaste es {}", usuario.getRegion());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("La Region del usuario creado es: {}", usuario);
+
+                logger.info("La Comuna del usuario que agregaste es {}", usuario.getComuna());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("La Comuna del usuario creado es: {}", usuario);
+
+                logger.info("El Correo del usuario que agregaste es {}", usuario.getCorreo());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("El Correo del  usuario creado es: {}", usuario);
+
+                logger.info("La Contraseña del usuario que agregaste es {}", usuario.getContrasena());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("La Contraseña del usuario creado es: {}", usuario);
+
+                logger.info("El Telefono del usuario que agregaste es {}", usuario.getTelefono());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("El Telefono del usuario creado es: {}", usuario);
+
+                logger.info("La Direccion del usuario que agregaste es {}", usuario.getDireccion());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("La Direccion del usuario creado es: {}", usuario);
+
+                logger.info("El Codigo Postal del usuario que agregaste es {}", usuario.getCodigoPostal());
+                usuario = usuarioRepository.save(usuario);
+                logger.info("El Codigo postal usuario creado es: {}", usuario);
             }
         }
     }
