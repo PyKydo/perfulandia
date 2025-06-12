@@ -6,7 +6,6 @@ import com.duoc.msvc.usuario.models.entities.Usuario;
 
 import java.util.List;
 
-
 public interface UsuarioService {
     List<UsuarioDTO> findAll();
     UsuarioDTO findById(Long id);

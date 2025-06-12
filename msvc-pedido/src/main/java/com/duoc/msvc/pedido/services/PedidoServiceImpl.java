@@ -63,11 +63,9 @@ public class PedidoServiceImpl implements PedidoService{
         }
 
         try {
-            // Primero actualizamos el estado del pedido
             pedido.setEstado(nuevoEstado);
             pedidoRepository.save(pedido);
 
-            // Si el nuevo estado es "Pagado", actualizamos el pago
             if ("Pagado".equalsIgnoreCase(nuevoEstado)) {
                 try {
                     String resultado = pagoClient.updateEstadoById(idPedido, "Completado");
@@ -75,7 +73,6 @@ public class PedidoServiceImpl implements PedidoService{
                         throw new PedidoException("No se recibió respuesta del servicio de pagos");
                     }
                 } catch (Exception e) {
-                    // Si falla la actualización del pago, revertimos el estado del pedido
                     pedido.setEstado(estadoActual);
                     pedidoRepository.save(pedido);
                     throw new PedidoException("Error al actualizar el estado del pago: " + e.getMessage());
@@ -87,7 +84,6 @@ public class PedidoServiceImpl implements PedidoService{
                         throw new PedidoException("No se recibió respuesta del servicio de pagos");
                     }
                 } catch (Exception e) {
-                    // Si falla la actualización del pago, revertimos el estado del pedido
                     pedido.setEstado(estadoActual);
                     pedidoRepository.save(pedido);
                     throw new PedidoException("Error al actualizar el estado del pago: " + e.getMessage());
@@ -96,11 +92,23 @@ public class PedidoServiceImpl implements PedidoService{
 
             return pedido.getEstado();
         } catch (Exception e) {
-            // Si ocurre cualquier otro error, revertimos el estado del pedido
             pedido.setEstado(estadoActual);
             pedidoRepository.save(pedido);
             throw new PedidoException("Error al actualizar el estado: " + e.getMessage());
         }
+    }
+
+    @Override
+    public PedidoDTO updateById(Long id, Pedido newPedido) {
+        return convertToDTO(newPedido); //TODO: Terminar este metodo para actualizar (PUT)
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        if (!pedidoRepository.existsById(id)) {
+            throw new PedidoException("El usuario con id " + id + " no existe");
+        }
+        this.pedidoRepository.deleteById(id);
     }
 
 
@@ -187,7 +195,6 @@ public class PedidoServiceImpl implements PedidoService{
         envioClient.save(envioClientDTO);
 
         return convertToDTO(saved);
-
     }
 
     @Override
