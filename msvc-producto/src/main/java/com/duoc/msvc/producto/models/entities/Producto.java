@@ -36,7 +36,7 @@ public class Producto {
     private BigDecimal precio; // Precio unitario
 
     @Size(max = 100)
-    private String imagenRepresentativaURL; // Guarda URL de la Imagen. Posible cambio a tipo de dato Blob (para tener el archivo directamente).
+    private String imagenRepresentativaURL;
 
     private String descripcion;
 

@@ -16,9 +16,6 @@ import java.util.Locale;
 @Profile("dev")
 @Component
 public class LoadDatabase implements CommandLineRunner {
-
-
-
     @Autowired
     private ProductoRepository productoRepository;
 
@@ -31,34 +28,31 @@ public class LoadDatabase implements CommandLineRunner {
     if (productoRepository.count()==0){
         for(int i=0;i<1000;i++){
             Producto producto = new Producto();
-            producto.setNombre(faker.commerce().productName());
-            producto.setMarca(faker.company().name());
-            String precioStr = faker.commerce().price(1000, 10000);
-            BigDecimal precio = new BigDecimal(precioStr.replace(",",""));
+
+            String nombreBase = faker.options().option(
+                    faker.artist().name(),
+                    faker.space().constellation(),
+                    faker.ancient().hero(),
+                    faker.gameOfThrones().character(),
+                    faker.weather().description()
+            );
+
+            producto.setNombre(faker.options().option(nombreBase) + " " + faker.options().option("Extrait", "Eau de Parfum", "Eau de Toilette", "Eau de Cologne"));
+            producto.setMarca(faker.options().option("Channel", "Dior", "Victoria's Secrets", "Giorgio Armani", "Carolina Herrera", "Ralph Lauren", "Versace", "Rabanne"));
+            String precioStr = faker.commerce().price(5000, 80000).replace(",","");
+            BigDecimal precio = new BigDecimal(precioStr);
             producto.setPrecio(precio);
             producto.setDescripcion(faker.lorem().sentence());
             producto.setPorcentajeConcentracion(faker.number().randomDouble(0,1,40));
 
-            logger.info("prueba 1 Nombre {}",producto.getNombre());
             producto = productoRepository.save(producto);
-            logger.info("prueba 1 exitosa {}",producto);
 
-            logger.info("prueba 2 Nombre Compañia {}",producto.getMarca());
-            producto = productoRepository.save(producto);
-            logger.info("prueba 2 exitosa {}",producto);
-
-            logger.info("prueba 3 Precio de Producto {}",producto.getPrecio());
-            producto = productoRepository.save(producto);
-            logger.info("prueba 3 exitosa {}",producto);
-
-            logger.info("prueba 4 Descripcion de Producto  {}",producto.getDescripcion());
-            producto = productoRepository.save(producto);
-            logger.info("prueba 4 exitosa {}",producto);
-
-            logger.info("prueba 5  {}",producto.getPorcentajeConcentracion());
-            producto = productoRepository.save(producto);
-            logger.info("prueba 5 exitosa {}",producto);
+            logger.debug("Producto {} creado: {}", i+1, producto.toString());
         }
+        logger.info("Se generaron 100 productos de prueba exitosamente");
+    } else {
+        logger.info("Ya existen productos en la base de datos, no se generaron datos de prueba");
     }
+
     }
 }
