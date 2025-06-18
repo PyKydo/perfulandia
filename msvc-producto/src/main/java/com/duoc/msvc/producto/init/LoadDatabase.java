@@ -26,6 +26,7 @@ public class LoadDatabase implements CommandLineRunner {
     Faker faker = new Faker(Locale.of("es","CL"));
 
     if (productoRepository.count()==0){
+        logger.info("Generando 100 usuarios de prueba...");
         for(int i=0;i<1000;i++){
             Producto producto = new Producto();
 
@@ -39,11 +40,9 @@ public class LoadDatabase implements CommandLineRunner {
 
             producto.setNombre(faker.options().option(nombreBase) + " " + faker.options().option("Extrait", "Eau de Parfum", "Eau de Toilette", "Eau de Cologne"));
             producto.setMarca(faker.options().option("Channel", "Dior", "Victoria's Secrets", "Giorgio Armani", "Carolina Herrera", "Ralph Lauren", "Versace", "Rabanne"));
-            String precioStr = faker.commerce().price(5000, 80000).replace(",","");
-            BigDecimal precio = new BigDecimal(precioStr);
-            producto.setPrecio(precio);
+            producto.setPrecio(BigDecimal.valueOf(faker.number().numberBetween(5000, 120000)));
             producto.setDescripcion(faker.lorem().sentence());
-            producto.setPorcentajeConcentracion(faker.number().randomDouble(0,1,40));
+            producto.setPorcentajeConcentracion(faker.number().randomDouble(0, 1, 40));
 
             producto = productoRepository.save(producto);
 
