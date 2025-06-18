@@ -30,7 +30,7 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public UsuarioDTO findById(Long id){
         Usuario usuario = this.usuarioRepository.findById(id).orElseThrow(
-                () -> new UsuarioException("El usuario con id "+id+" no se encuentra en la base de datos")
+                () -> new UsuarioException("El usuario con id " + id + " no existe")
         );
 
         return convertToDTO(usuario);
@@ -42,21 +42,11 @@ public class UsuarioServicelmpl implements UsuarioService{
     }
 
     @Override
-    public UsuarioDTO updateById(Long id, Usuario usuario) {
-        Usuario newUsuario = usuarioRepository.findById(id)
+    public UsuarioDTO updateById(Long id, Usuario usuarioActualizado) {
+        Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
 
-        if (usuario.getNombre() != null) newUsuario.setNombre(usuario.getNombre());
-        if (usuario.getApellido() != null) newUsuario.setApellido(usuario.getApellido());
-        if (usuario.getCorreo() != null) newUsuario.setCorreo(usuario.getCorreo());
-        if (usuario.getTelefono() != null) newUsuario.setTelefono(usuario.getTelefono());
-        if (usuario.getRegion() != null) newUsuario.setRegion(usuario.getRegion());
-        if (usuario.getComuna() != null) newUsuario.setComuna(usuario.getComuna());
-        if (usuario.getCiudad() != null) newUsuario.setCiudad(usuario.getCiudad());
-        if (usuario.getDireccion() != null) newUsuario.setDireccion(usuario.getDireccion());
-        if (usuario.getCodigoPostal() != null) newUsuario.setCodigoPostal(usuario.getCodigoPostal());
-
-        return convertToDTO(usuarioRepository.save(newUsuario));
+        return convertToDTO(usuarioRepository.save(usuarioActualizado));
     }
 
     @Override
@@ -73,7 +63,7 @@ public class UsuarioServicelmpl implements UsuarioService{
             throw new UsuarioException("El pedido no puede ser nulo");
         }
         if (pedidoClientDTO.getIdCliente() == null) {
-            throw new UsuarioException("El ID del cliente es requerido");
+            throw new UsuarioException("El id del cliente es requerido");
         }
         if (!usuarioRepository.existsById(pedidoClientDTO.getIdCliente())) {
             throw new UsuarioException("El cliente con id " + pedidoClientDTO.getIdCliente() + " no existe");
@@ -89,7 +79,7 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public PedidoClientDTO pagarPedido(Long idCliente, Long idPedido) {
         if (idCliente == null || idPedido == null) {
-            throw new UsuarioException("El ID del cliente y del pedido son requeridos");
+            throw new UsuarioException("El id del cliente y del pedido son requeridos");
         }
         if (!usuarioRepository.existsById(idCliente)) {
             throw new UsuarioException("El cliente con id " + idCliente + " no existe");
@@ -124,7 +114,7 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public List<PedidoClientDTO> misPedidos(Long idCliente) {
         if (idCliente == null) {
-            throw new UsuarioException("El ID del cliente es requerido");
+            throw new UsuarioException("El id del cliente es requerido");
         }
         if (!usuarioRepository.existsById(idCliente)) {
             throw new UsuarioException("El cliente con id " + idCliente + " no existe");

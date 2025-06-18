@@ -40,7 +40,7 @@ public class ProductoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductoDTO> updateById(@PathVariable Long id, @RequestBody Producto producto){
+    public ResponseEntity<ProductoDTO> updateById(@PathVariable Long id, @Valid @RequestBody Producto producto){
         return ResponseEntity.status(HttpStatus.OK).body(this.productoService.updateById(id, producto));
     }
 

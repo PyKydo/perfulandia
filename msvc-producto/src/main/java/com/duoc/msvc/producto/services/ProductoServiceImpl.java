@@ -23,7 +23,7 @@ public class ProductoServiceImpl implements ProductoService{
     @Override
     public ProductoDTO findById(Long id) {
         Producto producto = this.productoRepository.findById(id).orElseThrow(
-                () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
+                () -> new ProductoException("El producto con el id " + id + " no existe")
         );
 
         return convertToDTO(producto);
@@ -60,7 +60,7 @@ public class ProductoServiceImpl implements ProductoService{
     @Override
     public ProductoDTO updateById(Long id, Producto producto) {
         Producto productoExistente = this.productoRepository.findById(id).orElseThrow(
-                () -> new ProductoException("El producto con el id "+id+" no se puede actualizar porque no existe")
+                () -> new ProductoException("El producto con el id " + id + " no se puede actualizar porque no existe")
         );
 
         productoExistente.setCategoria(producto.getCategoria());

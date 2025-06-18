@@ -10,7 +10,7 @@ public interface UsuarioService {
     List<UsuarioDTO> findAll();
     UsuarioDTO findById(Long id);
     UsuarioDTO save(Usuario usuario);
-    UsuarioDTO updateById(Long id, Usuario usuario);
+    UsuarioDTO updateById(Long id, Usuario usuarioActualizado);
     void deleteById(Long id);
     PedidoClientDTO realizarPedido(PedidoClientDTO pedidoClientDTO);
     PedidoClientDTO pagarPedido(Long idCliente, Long idPedido);

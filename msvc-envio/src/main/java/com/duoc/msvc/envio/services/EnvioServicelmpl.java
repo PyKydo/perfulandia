@@ -33,7 +33,7 @@ public class EnvioServicelmpl implements EnvioService{
     @Override
     public EnvioDTO findById(Long id) {
         Envio envio = this.envioRepository.findById(id).orElseThrow(
-                () -> new EnvioException("El envio con id "+id+" no se encuentra en la base de datos")
+                () -> new EnvioException("El envio con id "+ id + " no existe")
         );
         return convertToDTO(envio);
     }
@@ -47,6 +47,25 @@ public class EnvioServicelmpl implements EnvioService{
         envio.setEstado("Pendiente");
 
         return convertToDTO(this.envioRepository.save(envio));
+    }
+
+    @Override
+    public EnvioDTO updateById(Long id, Envio envioActualizado) {
+        Envio envioExistente = envioRepository.findById(id)
+                .orElseThrow(() -> new EnvioException("El envio con id " + id+ " no existe"));
+
+        envioActualizado.setFechaEstimadaEntrega(envioExistente.getFechaEstimadaEntrega());
+        envioActualizado.setIdPedido(envioExistente.getIdPedido());
+
+        return convertToDTO(envioRepository.save(envioActualizado));
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        if (!envioRepository.existsById(id)) {
+            throw new EnvioException("El envio con id " + id + " no existe");
+        }
+        envioRepository.deleteById(id);
     }
 
     @Override
@@ -64,7 +83,7 @@ public class EnvioServicelmpl implements EnvioService{
         return dto;
     }
 
-    public BigDecimal getCostoEnvio() {
+    public BigDecimal getCostoEnvio() { // Simulación
         Random random = new Random();
 
         int distanciaKm = random.nextInt(96) + 5;
@@ -109,7 +128,6 @@ public class EnvioServicelmpl implements EnvioService{
                         throw new EnvioException("No se recibió respuesta del servicio de pedidos");
                     }
                 } catch (Exception e) {
-                    // Si falla la actualización del pedido, revertimos el estado del envío
                     envio.setEstado(estadoActual);
                     envioRepository.save(envio);
                     throw new EnvioException("Error al actualizar el estado del pedido: " + e.getMessage());
@@ -118,7 +136,6 @@ public class EnvioServicelmpl implements EnvioService{
 
             return envio.getEstado();
         } catch (Exception e) {
-            // Si ocurre cualquier otro error, revertimos el estado del envío
             envio.setEstado(estadoActual);
             envioRepository.save(envio);
             throw new EnvioException("Error al actualizar el estado: " + e.getMessage());

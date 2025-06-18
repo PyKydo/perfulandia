@@ -40,7 +40,7 @@ public class SucursalController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SucursalDTO> updateById(@PathVariable Long id, @RequestBody Sucursal sucursal){
+    public ResponseEntity<SucursalDTO> updateById(@PathVariable Long id, @Valid @RequestBody Sucursal sucursal){
         return ResponseEntity.status(HttpStatus.OK).body(this.sucursalService.updateById(id, sucursal));
     }
 
