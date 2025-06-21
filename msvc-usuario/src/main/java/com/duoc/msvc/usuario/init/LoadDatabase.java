@@ -43,7 +43,6 @@ public class LoadDatabase implements CommandLineRunner {
 
                 usuarioRepository.save(usuario);
 
-                // Log opcional del usuario creado (solo para debug)
                 logger.debug("Usuario {} creado: {}", i+1, usuario.toString());
             }
 

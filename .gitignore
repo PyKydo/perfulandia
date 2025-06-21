@@ -42,3 +42,4 @@ build/
 .mv.db
 .trace.db
 /data
+.fake

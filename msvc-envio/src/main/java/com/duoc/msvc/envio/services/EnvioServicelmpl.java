@@ -50,16 +50,16 @@ public class EnvioServicelmpl implements EnvioService{
     }
 
     @Override
-    public EnvioDTO updateById(Long id, Envio envioActualizado) {
+public EnvioDTO updateById(Long id, Envio envioActualizado) {
         Envio envioExistente = envioRepository.findById(id)
                 .orElseThrow(() -> new EnvioException("El envio con id " + id+ " no existe"));
 
         envioActualizado.setFechaEstimadaEntrega(envioExistente.getFechaEstimadaEntrega());
         envioActualizado.setIdPedido(envioExistente.getIdPedido());
+        envioActualizado.setCosto(envioExistente.getCosto());
 
         return convertToDTO(envioRepository.save(envioActualizado));
     }
-
     @Override
     public void deleteById(Long id) {
         if (!envioRepository.existsById(id)) {

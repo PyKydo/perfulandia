@@ -1,7 +1,9 @@
 package com.duoc.msvc.sucursal.services;
 
+import com.duoc.msvc.sucursal.clients.ProductoClient;
 import com.duoc.msvc.sucursal.dtos.InventarioDTO;
 import com.duoc.msvc.sucursal.dtos.SucursalDTO;
+import com.duoc.msvc.sucursal.dtos.pojos.ProductoDTO;
 import com.duoc.msvc.sucursal.exceptions.SucursalException;
 import com.duoc.msvc.sucursal.models.entities.Inventario;
 import com.duoc.msvc.sucursal.models.entities.Sucursal;
@@ -9,12 +11,17 @@ import com.duoc.msvc.sucursal.repositories.SucursalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SucursalServicelmpl implements SucursalService{
     @Autowired
     private SucursalRepository sucursalRepository;
+
+    @Autowired
+    private ProductoClient productoClient;
 
     @Override
     public List<SucursalDTO> findAll() {
@@ -25,9 +32,8 @@ public class SucursalServicelmpl implements SucursalService{
 
     @Override
     public SucursalDTO findById(Long id) {
-
         Sucursal sucursal = this.sucursalRepository.findById(id).orElseThrow(
-                () -> new SucursalException("El envio con id "+id+" no se encuentra en la base de datos")
+                () -> new SucursalException("La sucursal con id " + id + " no existe")
         );
         return convertToDTO(sucursal);
     }
@@ -38,17 +44,34 @@ public class SucursalServicelmpl implements SucursalService{
     }
 
     @Override
-    public SucursalDTO updateById(Long id, Sucursal sucursal) {
-        Sucursal newSucursal = sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada con id: " + id));
+    public SucursalDTO updateById(Long id, Sucursal sucursalActualizada) {
+        Sucursal sucursalExistente = sucursalRepository.findById(id)
+                .orElseThrow(() -> new SucursalException("La sucursal con id " + id + " no existe"));
 
-        newSucursal.setDireccion(sucursal.getDireccion());
-        newSucursal.setRegion(sucursal.getRegion());
-        newSucursal.setComuna(sucursal.getComuna());
-        newSucursal.setCantidadPersonal(sucursal.getCantidadPersonal());
-        newSucursal.setHorariosAtencion(sucursal.getHorariosAtencion());
+        sucursalActualizada.setIdSucursal(sucursalExistente.getIdSucursal());
 
-        return convertToDTO(sucursalRepository.save(newSucursal));
+        List<Inventario> inventariosFinales = new ArrayList<>();
+
+        if (sucursalActualizada.getInventarios() != null) {
+            for (Inventario nuevoInv : sucursalActualizada.getInventarios()) {
+                Optional<Inventario> existenteOpt = sucursalExistente.getInventarios().stream()
+                        .filter(i -> i.getIdProducto().equals(nuevoInv.getIdProducto()))
+                        .findFirst();
+
+                if (existenteOpt.isPresent()) {
+                    Inventario existente = existenteOpt.get();
+                    existente.setStock(nuevoInv.getStock());
+                    inventariosFinales.add(existente);
+                } else {
+                    nuevoInv.setSucursal(sucursalActualizada); // relación bidireccional
+                    inventariosFinales.add(nuevoInv);
+                }
+            }
+        }
+
+        sucursalActualizada.setInventarios(inventariosFinales);
+
+        return convertToDTO(sucursalRepository.save(sucursalActualizada));
     }
 
     @Override
@@ -64,20 +87,16 @@ public class SucursalServicelmpl implements SucursalService{
 
     @Override
     public void updateStock(Long idSucursal, Long idInventario, Integer nuevoStock) {
-        // Buscar la sucursal por su ID
         Sucursal sucursal = sucursalRepository.findById(idSucursal)
-                .orElseThrow(() -> new SucursalException("Sucursal no encontrada"));
+                .orElseThrow(() -> new SucursalException("La sucursal con id " + idSucursal + " no existe"));
 
-        // Buscar el inventario dentro de la sucursal
         Inventario inventario = sucursal.getInventarios().stream()
                 .filter(inv -> inv.getIdInventario().equals(idInventario))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Inventario no encontrado en la sucursal"));
+                .orElseThrow(() -> new SucursalException("La sucursal con id " + idInventario + " no existe"));
 
-        // Actualizar el stock
         inventario.setStock(nuevoStock);
 
-        // Guardar los cambios en la sucursal (cascade debería encargarse del inventario)
         sucursalRepository.save(sucursal);
     }
 
@@ -93,11 +112,12 @@ public class SucursalServicelmpl implements SucursalService{
 
         List<InventarioDTO> inventariosDTO = sucursal.getInventarios().stream()
                 .map(inventario -> {
+                    ProductoDTO producto = productoClient.findById(inventario.getIdProducto());
                     InventarioDTO inventarioDTO = new InventarioDTO();
-                    inventarioDTO.setIdInventario(inventario.getIdInventario());
                     inventarioDTO.setStock(inventario.getStock());
                     inventarioDTO.setIdProducto(inventario.getIdProducto());
-
+                    inventarioDTO.setNombreProducto(producto.getNombre());
+                    inventarioDTO.setMarcaProducto(producto.getMarca());
 
                     return inventarioDTO;
                 }

@@ -46,6 +46,8 @@ public class UsuarioServicelmpl implements UsuarioService{
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
 
+        usuarioActualizado.setIdUsuario(usuarioExistente.getIdUsuario());
+
         return convertToDTO(usuarioRepository.save(usuarioActualizado));
     }
 

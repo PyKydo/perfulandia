@@ -5,7 +5,8 @@ import lombok.*;
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
 public class InventarioDTO {
-    private Long idInventario;
     private Long idProducto;
+    private String nombreProducto;
+    private String marcaProducto;
     private Integer stock;
 }

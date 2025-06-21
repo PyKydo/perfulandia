@@ -1,11 +1,11 @@
-package com.duoc.msvc.pago.exceptions;
+package com.duoc.msvc.sucursal.exceptions;
 
-import com.duoc.msvc.pago.dtos.ErrorDTO;
+import com.duoc.msvc.sucursal.dtos.ErrorDTO;
+import com.duoc.msvc.sucursal.exceptions.SucursalException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,21 +17,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        ErrorDTO error = new ErrorDTO();
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
-        error.setDate(new Date());
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
-            errors.put(fieldError.getField(), fieldError.getDefaultMessage())
-        );
-        error.setErrors(errors);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PagoException.class)
-    public ResponseEntity<ErrorDTO> handlePagoException(PagoException ex) {
+    @ExceptionHandler(SucursalException.class)
+    public ResponseEntity<ErrorDTO> handleSucursalException(SucursalException ex) {
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -52,13 +39,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ErrorDTO error = new ErrorDTO();
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setDate(new Date());
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(fieldError -> 
+            errors.put(fieldError.getField(), fieldError.getDefaultMessage())
+        );
+        error.setErrors(errors);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex) {
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
         Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(violation ->
+        ex.getConstraintViolations().forEach(violation -> 
             errors.put(violation.getPropertyPath().toString(), violation.getMessage())
         );
         error.setErrors(errors);
@@ -76,4 +76,3 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-
