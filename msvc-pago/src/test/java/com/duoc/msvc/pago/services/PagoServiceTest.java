@@ -62,7 +62,7 @@ class PagoServiceTest {
         when(pagoRepository.findById(2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> pagoService.findById(2L))
                 .isInstanceOf(PagoException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no se encuentra en la base de datos");
         verify(pagoRepository).findById(2L);
     }
 
@@ -99,7 +99,7 @@ class PagoServiceTest {
         Pago updated = new Pago();
         assertThatThrownBy(() -> pagoService.updateById(2L, updated))
                 .isInstanceOf(PagoException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no existe en la base de datos");
         verify(pagoRepository).findById(2L);
     }
 
@@ -117,7 +117,7 @@ class PagoServiceTest {
         when(pagoRepository.findById(2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> pagoService.deleteById(2L))
                 .isInstanceOf(PagoException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no existe en la base de datos");
         verify(pagoRepository).findById(2L);
     }
 
