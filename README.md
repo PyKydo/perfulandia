@@ -1,121 +1,133 @@
-# Sistema de Perfulandia - Microservicios
+# Perfulandia - Arquitectura de Microservicios
 
-Sistema distribuido de gestión de pedidos implementado con microservicios en Spring Boot.
+Este proyecto implementa una arquitectura de microservicios para la gestión de una tienda de perfumes, utilizando Java Spring Boot, Spring Data JPA, Spring HATEOAS y documentación OpenAPI (Swagger). Cada microservicio es autónomo, desacoplado y expone su propia API RESTful documentada y navegable.
 
-## Arquitectura
+---
 
-El sistema está compuesto por los siguientes microservicios:
+## Microservicios
 
-### 1. Microservicio de Usuarios (msvc-usuario)
-- **Puerto**: 8001
-- **URL Base**: `http://localhost:8001/api/v1/usuarios`
-- **Responsabilidad**: Gestión de usuarios y clientes del sistema
-- **Endpoints Principales**:
-  - `GET /` - Listar todos los usuarios
-  - `GET /{id}` - Obtener usuario por ID
-  - `POST /` - Crear nuevo usuario
-  - `PUT /{id}` - Actualizar usuario
-  - `DELETE /{id}` - Eliminar usuario
-  - `GET /{idCliente}/realizarPedido` - Realizar nuevo pedido
-  - `GET /{idCliente}/pagarPedido/{idPedido}` - Pagar pedido
-  - `GET /{idCliente}/misPedidos` - Ver pedidos de un cliente
+### 1. **msvc-usuario**
 
-### 2. Microservicio de Sucursales (msvc-sucursal)
-- **Puerto**: 8002
-- **URL Base**: `http://localhost:8002/api/v1/sucursales`
-- **Responsabilidad**: Gestión de sucursales y puntos de venta
-- **Endpoints Principales**:
-  - `GET /` - Listar todas las sucursales
-  - `GET /{id}` - Obtener sucursal por ID
-  - `POST /` - Crear nueva sucursal
-  - `PUT /{id}` - Actualizar sucursal
-  - `DELETE /{id}` - Eliminar sucursal
-  - `PUT /{idSuc}/inventario/{idInv}/stock` - Actualizar stock de inventario
-  - `GET /mejor-stock/{idProducto}` - Obtener sucursal con mejor stock
+- **Propósito:** Gestión de usuarios (CRUD, pedidos asociados, pagos, etc.).
+- **Endpoints principales:**
+  - `GET /api/v1/usuarios` — Listar usuarios
+  - `GET /api/v1/usuarios/{id}` — Obtener usuario por ID
+  - `POST /api/v1/usuarios` — Crear usuario
+  - `PUT /api/v1/usuarios/{id}` — Actualizar usuario
+  - `DELETE /api/v1/usuarios/{id}` — Eliminar usuario
+- **Tecnologías:** Spring Boot, Spring Data JPA, H2, Spring HATEOAS, Swagger/OpenAPI
+- **Swagger UI:** [http://localhost:8001/swagger-ui.html](http://localhost:8001/swagger-ui.html)
+- **HATEOAS:** Respuestas enriquecidas con links usando ensamblador `UsuarioDTOModelAssembler`.
 
-### 3. Microservicio de Productos (msvc-producto)
-- **Puerto**: 8003
-- **URL Base**: `http://localhost:8003/api/v1/productos`
-- **Responsabilidad**: Gestión de productos y catálogo
-- **Endpoints Principales**:
-  - `GET /` - Listar todos los productos
-  - `GET /{id}` - Obtener producto por ID
-  - `POST /` - Crear nuevo producto
-  - `PUT /{id}` - Actualizar producto
-  - `DELETE /{id}` - Eliminar producto
-  - `GET /categoria/{categoria}` - Listar productos por categoría
+### 2. **msvc-producto**
 
-### 4. Microservicio de Pedidos (msvc-pedido)
-- **Puerto**: 8004
-- **URL Base**: `http://localhost:8004/api/v1/pedidos`
-- **Responsabilidad**: Gestión de pedidos y su ciclo de vida
-- **Endpoints Principales**:
-  - `GET /` - Listar todos los pedidos
-  - `GET /{id}` - Obtener pedido por ID
-  - `POST /` - Crear nuevo pedido
-  - `GET /cliente/{id}` - Listar pedidos por cliente
-  - `PUT /{id}/actualizarEstado/{nuevoEstado}` - Actualizar estado del pedido
+- **Propósito:** Gestión de productos (CRUD, consulta de stock, etc.).
+- **Endpoints principales:**
+  - `GET /api/v1/productos` — Listar productos
+  - `GET /api/v1/productos/{id}` — Obtener producto por ID
+  - `POST /api/v1/productos` — Crear producto
+  - `PUT /api/v1/productos/{id}` — Actualizar producto
+  - `DELETE /api/v1/productos/{id}` — Eliminar producto
+- **Swagger UI:** [http://localhost:8003/swagger-ui.html](http://localhost:8003/swagger-ui.html)
+- **HATEOAS:** Ensamblador `ProductoDTOModelAssembler`.
 
-### 5. Microservicio de Pagos (msvc-pago)
-- **Puerto**: 8005
-- **URL Base**: `http://localhost:8005/api/v1/pagos`
-- **Responsabilidad**: Gestión de pagos y transacciones
-- **Endpoints Principales**:
-  - `GET /` - Listar todos los pagos
-  - `GET /{id}` - Obtener pago por ID
-  - `POST /` - Crear nuevo pago
-  - `GET /estado/{estado}` - Listar pagos por estado
-  - `PUT /actualizarEstado/{idPedido}/{nuevoEstado}` - Actualizar estado del pago
+### 3. **msvc-sucursal**
 
-### 6. Microservicio de Envíos (msvc-envio)
-- **Puerto**: 8006
-- **URL Base**: `http://localhost:8006/api/v1/envios`
-- **Responsabilidad**: Gestión de envíos y entregas
-- **Endpoints Principales**:
-  - `GET /` - Listar todos los envíos
-  - `GET /{id}` - Obtener envío por ID
-  - `POST /` - Crear nuevo envío
-  - `GET /costoEnvio` - Obtener costo de envío
-  - `PUT /actualizarEstado/{idPedido}/{nuevoEstado}` - Actualizar estado del envío
+- **Propósito:** Gestión de sucursales y su inventario.
+- **Endpoints principales:**
+  - `GET /api/v1/sucursales` — Listar sucursales
+  - `GET /api/v1/sucursales/{id}` — Obtener sucursal por ID
+  - `POST /api/v1/sucursales` — Crear sucursal
+  - `PUT /api/v1/sucursales/{id}` — Actualizar sucursal
+  - `DELETE /api/v1/sucursales/{id}` — Eliminar sucursal
+- **Swagger UI:** [http://localhost:8002/swagger-ui.html](http://localhost:8002/swagger-ui.html)
+- **HATEOAS:** Ensamblador `SucursalDTOModelAssembler`.
 
-## Flujo de Proceso
+### 4. **msvc-pedido**
 
-1. **Creación de Pedido**:
-   - Cliente realiza pedido a través del servicio de usuarios
-   - Se verifica disponibilidad de cada producto en los inventarios del servicio de sucursal
-   - Se crea el pedido en el servicio de pedidos
-   - Se genera el pago en el servicio de pagos
-   - Se crea el envío en el servicio de envíos
+- **Propósito:** Gestión de pedidos, integración con usuarios, productos, sucursales y pagos.
+- **Endpoints principales:**
+  - `GET /api/v1/pedidos` — Listar pedidos
+  - `GET /api/v1/pedidos/{id}` — Obtener pedido por ID
+  - `POST /api/v1/pedidos` — Crear pedido
+  - `PUT /api/v1/pedidos/{id}` — Actualizar pedido
+  - `DELETE /api/v1/pedidos/{id}` — Eliminar pedido
+- **Swagger UI:** [http://localhost:8004/swagger-ui.html](http://localhost:8004/swagger-ui.html)
+- **HATEOAS:** Ensamblador `PedidoDTOModelAssembler`.
 
-2. **Proceso de Pago**:
-   - Cliente paga el pedido
-   - Se actualiza estado del pedido a "Pagado"
-   - Se actualiza estado del pago a "Completado"
-   - Se actualiza estado del envío a "Enviado"
+### 5. **msvc-envio**
 
-## Tecnologías Utilizadas
+- **Propósito:** Gestión de envíos asociados a pedidos.
+- **Endpoints principales:**
+  - `GET /api/v1/envios` — Listar envíos
+  - `GET /api/v1/envios/{id}` — Obtener envío por ID
+  - `POST /api/v1/envios` — Crear envío
+  - `PUT /api/v1/envios/{id}` — Actualizar envío
+  - `DELETE /api/v1/envios/{id}` — Eliminar envío
+- **Swagger UI:** [http://localhost:8005/swagger-ui.html](http://localhost:8005/swagger-ui.html)
+- **HATEOAS:** Ensamblador `EnvioDTOModelAssembler`.
 
-- Java 21
-- Spring Boot 3
-- Spring Cloud
-- OpenFeign
-- JPA/Hibernate
-- MySQL
-- Maven
-- Intellij IDEA CE
-- Postman
+### 6. **msvc-pago**
 
-## Configuración
+- **Propósito:** Gestión de pagos asociados a pedidos y usuarios.
+- **Endpoints principales:**
+  - `GET /api/v1/pagos` — Listar pagos
+  - `GET /api/v1/pagos/{id}` — Obtener pago por ID
+  - `POST /api/v1/pagos` — Crear pago
+  - `PUT /api/v1/pagos/{id}` — Actualizar pago
+  - `DELETE /api/v1/pagos/{id}` — Eliminar pago
+- **Swagger UI:** [http://localhost:8006/swagger-ui.html](http://localhost:8006/swagger-ui.html)
+- **HATEOAS:** Ensamblador `PagoDTOModelAssembler`.
 
-Cada microservicio tiene su propio archivo `application.properties` con la configuración necesaria:
+---
 
-- Conexión y configuración con la base de datos
-- Puertos
+## Tecnologías y Frameworks
 
-## Notas Importantes
+- **Spring Boot** (REST, Data JPA, Validation, HATEOAS)
+- **Swagger/OpenAPI** (springdoc-openapi-starter-webmvc-ui)
+- **H2 Database** (modo dev/test)
+- **Mockito/JUnit 5** (tests unitarios y de integración)
+- **Spring HATEOAS** (navegabilidad y enlaces en las respuestas)
 
-- Cada microservicio utiliza H2 Database como motor de base de datos
-- La comunicación entre microservicios se realiza mediante OpenFeign
-- Los estados de los pedidos son: Nuevo, Pagado, Enviado, Cancelado
-- Los estados de los pagos son: Pendiente, Completado, Cancelado
-- Los estados de los envíos son: Pendiente, Enviado 
+---
+
+## Documentación y Navegabilidad
+
+- **OpenAPI/Swagger:** Todos los endpoints están documentados con descripciones, parámetros, respuestas y ejemplos.
+- **HATEOAS:** Las respuestas de los endpoints principales incluyen enlaces (`_links`) para facilitar la navegación entre recursos.
+- **Configuración personalizada:** Cada microservicio tiene su propia configuración de Swagger con título, descripción, contacto y summary.
+
+---
+
+## Ejecución y Pruebas
+
+1. **Clona el repositorio y navega a la raíz del proyecto.**
+2. **Arranca cada microservicio:**
+   ```bash
+   cd msvc-usuario && ./mvnw spring-boot:run
+   cd ../msvc-producto && ./mvnw spring-boot:run
+   cd ../msvc-sucursal && ./mvnw spring-boot:run
+   cd ../msvc-pedido && ./mvnw spring-boot:run
+   cd ../msvc-envio && ./mvnw spring-boot:run
+   cd ../msvc-pago && ./mvnw spring-boot:run
+   ```
+3. **Accede a la documentación Swagger UI** en los puertos indicados arriba.
+4. **Ejecuta los tests** con:
+   ```bash
+   ./mvnw test
+   ```
+
+---
+
+## Arquitectura y buenas prácticas
+
+- **Separación de responsabilidades:** Cada microservicio es autónomo y desacoplado.
+- **DTOs y ensambladores:** Uso de DTOs para exponer datos y ensambladores HATEOAS para enriquecer las respuestas.
+- **Manejo de errores:** Excepciones personalizadas y controladores globales de errores.
+- **Inicialización de datos:** Carga de datos de ejemplo en modo desarrollo.
+
+---
+
+## Contacto
+
+- Equipo Perfulandia — soporte@perfulandia.com
