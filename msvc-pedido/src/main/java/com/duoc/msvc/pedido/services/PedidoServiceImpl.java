@@ -98,19 +98,28 @@ public class PedidoServiceImpl implements PedidoService{
         }
     }
 
+    @Transactional
     @Override
-    public PedidoDTO updateById(Long id, Pedido newPedido) {
-        return convertToDTO(newPedido); //TODO: Terminar este metodo para actualizar (PUT)
+    public PedidoDTO updateById(Long id, Pedido pedido) {
+        Pedido pedidoDb = pedidoRepository.findById(id).orElseThrow(
+            () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
+        );
+
+        // Solo se pueden actualizar ciertos campos.
+        pedidoDb.setMetodoPago(pedido.getMetodoPago());
+        pedidoDb.setEstado(pedido.getEstado());
+
+        return convertToDTO(pedidoRepository.save(pedidoDb));
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-        if (!pedidoRepository.existsById(id)) {
-            throw new PedidoException("El usuario con id " + id + " no existe");
-        }
-        this.pedidoRepository.deleteById(id);
+        pedidoRepository.findById(id).orElseThrow(
+            () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
+        );
+        pedidoRepository.deleteById(id);
     }
-
 
     @Override
     public PedidoDTO findById(Long id) {
@@ -134,7 +143,7 @@ public class PedidoServiceImpl implements PedidoService{
         BigDecimal totalDetalles = BigDecimal.ZERO;
 
         for (DetallePedido detalle : pedido.getDetallesPedido()) {
-            ProductoClientDTO productoClientDTO = productoClient.getProductoById(detalle.getIdProducto());
+            ProductoClientDTO productoClientDTO = productoClient.findById(detalle.getIdProducto());
 
             SucursalClientDTO sucursalClientDTO = sucursalClient.getSucursalBestStockByIdProducto(detalle.getIdProducto());
 
@@ -155,7 +164,7 @@ public class PedidoServiceImpl implements PedidoService{
 
             Integer nuevoStock = inventario.getStock() - detalle.getCantidad();
 
-            sucursalClient.updateInventarioStock(
+            sucursalClient.updateStock(
                     sucursalClientDTO.getIdSucursal(),         // idSuc
                     inventario.getIdInventario(),              // idInv
                     nuevoStock                                 // nuevoStock
@@ -203,8 +212,11 @@ public class PedidoServiceImpl implements PedidoService{
         UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(pedido.getIdCliente());
 
         PedidoDTO dto = new PedidoDTO();
+        dto.setId(pedido.getIdPedido());
         dto.setIdCliente(usuarioClientDTO.getIdCliente());
         dto.setDireccion(usuarioClientDTO.getDireccion());
+        dto.setRegion(usuarioClientDTO.getRegion());
+        dto.setComuna(usuarioClientDTO.getComuna());
         dto.setNombreCliente(usuarioClientDTO.getNombre());
         dto.setApellidoCliente(usuarioClientDTO.getApellido());
         dto.setCorreo(usuarioClientDTO.getCorreo());
@@ -217,7 +229,7 @@ public class PedidoServiceImpl implements PedidoService{
 
         List<DetallePedidoDTO> detallesDTO = pedido.getDetallesPedido().stream()
                 .map(detalle -> {
-                    ProductoClientDTO productoClientDTO = productoClient.getProductoById(detalle.getIdProducto());
+                    ProductoClientDTO productoClientDTO = productoClient.findById(detalle.getIdProducto());
 
                     DetallePedidoDTO detalleDTO = new DetallePedidoDTO();
 

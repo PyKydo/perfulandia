@@ -12,4 +12,6 @@ public interface PagoService{
     String updateEstadoById(Long id, String nuevoEstado);
     PagoDTO save(Pago pago);
     PagoDTO convertToDTO(Pago pago);
+    PagoDTO updateById(Long id, Pago pago);
+    void deleteById(Long id);
 }

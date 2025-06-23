@@ -39,9 +39,37 @@ public class ProductoServiceImpl implements ProductoService{
         return convertToDTO(this.productoRepository.save(producto));
     }
 
+    @Transactional
+    @Override
+    public ProductoDTO updateById(Long id, Producto producto) {
+        Producto productoDb = productoRepository.findById(id).orElseThrow(
+            () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
+        );
+
+        productoDb.setNombre(producto.getNombre());
+        productoDb.setMarca(producto.getMarca());
+        productoDb.setPrecio(producto.getPrecio());
+        productoDb.setDescripcion(producto.getDescripcion());
+        productoDb.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
+        productoDb.setCategoria(producto.getCategoria());
+        productoDb.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
+        
+        return convertToDTO(productoRepository.save(productoDb));
+    }
+
+    @Transactional
+    @Override
+    public void deleteById(Long id) {
+        productoRepository.findById(id).orElseThrow(
+            () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
+        );
+        productoRepository.deleteById(id);
+    }
+
     @Override
     public ProductoDTO convertToDTO(Producto producto) {
         ProductoDTO dto = new ProductoDTO();
+        dto.setId(producto.getIdProducto());
         dto.setNombre(producto.getNombre());
         dto.setMarca(producto.getMarca());
         dto.setPrecio(producto.getPrecio());
@@ -50,30 +78,5 @@ public class ProductoServiceImpl implements ProductoService{
         dto.setCategoria(producto.getCategoria());
         dto.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
         return dto;
-    }
-
-    @Override
-    public void deleteById(Long id){
-        this.productoRepository.deleteById(id);
-    }
-
-    @Override
-    public ProductoDTO updateById(Long id, Producto producto) {
-        Producto productoExistente = this.productoRepository.findById(id).orElseThrow(
-                () -> new ProductoException("El producto con el id " + id + " no se puede actualizar porque no existe")
-        );
-
-        productoExistente.setCategoria(producto.getCategoria());
-        productoExistente.setDescripcion(producto.getDescripcion());
-        productoExistente.setNombre(producto.getNombre());
-        productoExistente.setMarca(producto.getMarca());
-        productoExistente.setPrecio(producto.getPrecio());
-        productoExistente.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
-        productoExistente.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
-
-        return convertToDTO(this.productoRepository.save(productoExistente));
-
-
-
     }
 }

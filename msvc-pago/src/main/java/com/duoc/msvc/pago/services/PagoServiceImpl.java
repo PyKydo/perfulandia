@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -101,6 +102,7 @@ public class PagoServiceImpl implements PagoService{
     public PagoDTO convertToDTO(Pago pago){
         PagoDTO dto = new PagoDTO();
 
+        dto.setId(pago.getIdPago());
         dto.setEstado(pago.getEstado());
         dto.setMetodo(pago.getMetodo());
         dto.setFecha(pago.getFecha());
@@ -123,5 +125,25 @@ public class PagoServiceImpl implements PagoService{
         }
     }
 
+    @Transactional
+    @Override
+    public PagoDTO updateById(Long id, Pago pago) {
+        Pago pagoDb = pagoRepository.findById(id).orElseThrow(
+            () -> new PagoException("El pago con id " + id + " no existe en la base de datos")
+        );
+        validarPedido(pago.getIdPedido());
+        pagoDb.setMetodo(pago.getMetodo());
+        pagoDb.setMonto(pago.getMonto());
+        
+        return convertToDTO(pagoRepository.save(pagoDb));
+    }
 
+    @Transactional
+    @Override
+    public void deleteById(Long id) {
+        pagoRepository.findById(id).orElseThrow(
+            () -> new PagoException("El pago con id " + id + " no existe en la base de datos")
+        );
+        pagoRepository.deleteById(id);
+    }
 }

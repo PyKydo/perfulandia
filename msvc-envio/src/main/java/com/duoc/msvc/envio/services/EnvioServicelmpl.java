@@ -8,6 +8,7 @@ import com.duoc.msvc.envio.repositories.EnvioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -68,9 +69,11 @@ public EnvioDTO updateById(Long id, Envio envioActualizado) {
         envioRepository.deleteById(id);
     }
 
+    @Transactional
     @Override
     public EnvioDTO convertToDTO(Envio envio) {
         EnvioDTO dto = new EnvioDTO();
+        dto.setId(envio.getIdEnvio());
         dto.setCosto(envio.getCosto());
         dto.setCiudad(envio.getCiudad());
         dto.setDireccion(envio.getDireccion());

@@ -10,7 +10,7 @@ public interface EnvioService {
     List<EnvioDTO> findAll();
     EnvioDTO findById(Long id);
     EnvioDTO save(Envio envio);
-    EnvioDTO updateById(Long id, Envio envioActualizado);
+    EnvioDTO updateById(Long id, Envio envio);
     void deleteById(Long id);
     BigDecimal getCostoEnvio();
     String updateEstadoById(Long id, String nuevoEstado);

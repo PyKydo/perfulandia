@@ -43,6 +43,17 @@ public class PedidoController {
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findByIdCliente(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PedidoDTO> updateById(@PathVariable Long id, @Valid @RequestBody Pedido pedido){
+        return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.updateById(id, pedido));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+        this.pedidoService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}/actualizarEstado/{nuevoEstado}")
     public ResponseEntity<String> updateEstadoById(@PathVariable Long id, @PathVariable String nuevoEstado){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.updateEstadoById(id, nuevoEstado));

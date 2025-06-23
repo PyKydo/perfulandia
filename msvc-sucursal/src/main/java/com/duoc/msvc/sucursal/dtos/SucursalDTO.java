@@ -7,7 +7,7 @@ import java.util.List;
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
 public class SucursalDTO {
-    private Long idSucursal;
+    private Long id;
     private String direccion;
     private String region;
     private String comuna;

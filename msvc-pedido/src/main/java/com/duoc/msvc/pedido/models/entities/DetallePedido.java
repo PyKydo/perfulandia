@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @Table(name = "detalles_pedido")
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-@ToString
 public class DetallePedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,8 +36,14 @@ public class DetallePedido {
 
     private BigDecimal precio; // Precio historico (al momento de la compra)
 
-
-
-
-
+    @Override
+    public String toString() {
+        return "DetallePedido{" +
+                "idDetallePedido=" + idDetallePedido +
+                ", idProducto=" + idProducto +
+                ", idSucursal=" + idSucursal +
+                ", cantidad=" + cantidad +
+                ", precio=" + precio +
+                '}';
+    }
 }

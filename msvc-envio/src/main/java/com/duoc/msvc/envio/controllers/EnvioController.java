@@ -37,6 +37,17 @@ public class EnvioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(envioService.save(envio));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<EnvioDTO> updateById(@PathVariable Long id, @Valid @RequestBody Envio envio){
+        return ResponseEntity.status(HttpStatus.OK).body(envioService.updateById(id, envio));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+        envioService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/costoEnvio")
     public ResponseEntity<BigDecimal> getCostoEnvio(){
         return ResponseEntity.status(HttpStatus.OK).body(envioService.getCostoEnvio());

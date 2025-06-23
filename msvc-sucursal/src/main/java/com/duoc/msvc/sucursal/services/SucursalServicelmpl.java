@@ -10,6 +10,7 @@ import com.duoc.msvc.sucursal.models.entities.Sucursal;
 import com.duoc.msvc.sucursal.repositories.SucursalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,45 +39,34 @@ public class SucursalServicelmpl implements SucursalService{
         return convertToDTO(sucursal);
     }
 
+    @Transactional
     @Override
     public SucursalDTO save(Sucursal sucursal) {
         return convertToDTO(this.sucursalRepository.save(sucursal));
     }
 
+    @Transactional
     @Override
-    public SucursalDTO updateById(Long id, Sucursal sucursalActualizada) {
-        Sucursal sucursalExistente = sucursalRepository.findById(id)
-                .orElseThrow(() -> new SucursalException("La sucursal con id " + id + " no existe"));
+    public SucursalDTO updateById(Long id, Sucursal sucursal) {
+        Sucursal sucursalDb = sucursalRepository.findById(id)
+                .orElseThrow(() -> new SucursalException("Sucursal no encontrada con id: " + id));
 
-        sucursalActualizada.setIdSucursal(sucursalExistente.getIdSucursal());
+        sucursalDb.setDireccion(sucursal.getDireccion());
+        sucursalDb.setRegion(sucursal.getRegion());
+        sucursalDb.setComuna(sucursal.getComuna());
+        sucursalDb.setCantidadPersonal(sucursal.getCantidadPersonal());
+        sucursalDb.setHorariosAtencion(sucursal.getHorariosAtencion());
 
-        List<Inventario> inventariosFinales = new ArrayList<>();
-
-        if (sucursalActualizada.getInventarios() != null) {
-            for (Inventario nuevoInv : sucursalActualizada.getInventarios()) {
-                Optional<Inventario> existenteOpt = sucursalExistente.getInventarios().stream()
-                        .filter(i -> i.getIdProducto().equals(nuevoInv.getIdProducto()))
-                        .findFirst();
-
-                if (existenteOpt.isPresent()) {
-                    Inventario existente = existenteOpt.get();
-                    existente.setStock(nuevoInv.getStock());
-                    inventariosFinales.add(existente);
-                } else {
-                    nuevoInv.setSucursal(sucursalActualizada); // relación bidireccional
-                    inventariosFinales.add(nuevoInv);
-                }
-            }
-        }
-
-        sucursalActualizada.setInventarios(inventariosFinales);
-
-        return convertToDTO(sucursalRepository.save(sucursalActualizada));
+        return convertToDTO(sucursalRepository.save(sucursalDb));
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-        this.sucursalRepository.deleteById(id);
+        sucursalRepository.findById(id).orElseThrow(
+            () -> new SucursalException("Sucursal no encontrada con id: " + id)
+        );
+        sucursalRepository.deleteById(id);
     }
 
     @Override
@@ -85,10 +75,11 @@ public class SucursalServicelmpl implements SucursalService{
         return convertToDTO(sucursal);
     }
 
+    @Transactional
     @Override
     public void updateStock(Long idSucursal, Long idInventario, Integer nuevoStock) {
         Sucursal sucursal = sucursalRepository.findById(idSucursal)
-                .orElseThrow(() -> new SucursalException("La sucursal con id " + idSucursal + " no existe"));
+                .orElseThrow(() -> new SucursalException("Sucursal no encontrada con id: " + idSucursal));
 
         Inventario inventario = sucursal.getInventarios().stream()
                 .filter(inv -> inv.getIdInventario().equals(idInventario))
@@ -103,12 +94,12 @@ public class SucursalServicelmpl implements SucursalService{
     @Override
     public SucursalDTO convertToDTO(Sucursal sucursal) {
         SucursalDTO dto = new SucursalDTO();
+        dto.setId(sucursal.getIdSucursal());
+        dto.setDireccion(sucursal.getDireccion());
         dto.setRegion(sucursal.getRegion());
         dto.setComuna(sucursal.getComuna());
         dto.setCantidadPersonal(sucursal.getCantidadPersonal());
-        dto.setDireccion(sucursal.getDireccion());
         dto.setHorariosAtencion(sucursal.getHorariosAtencion());
-        dto.setIdSucursal(sucursal.getIdSucursal());
 
         List<InventarioDTO> inventariosDTO = sucursal.getInventarios().stream()
                 .map(inventario -> {

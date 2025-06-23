@@ -50,6 +50,17 @@ public class PagoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.save(pago));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PagoDTO> updateById(@PathVariable Long id, @Valid @RequestBody Pago pago){
+        return ResponseEntity.status(HttpStatus.OK).body(pagoService.updateById(id, pago));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+        pagoService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/actualizarEstado/{idPedido}/{nuevoEstado}")
     public ResponseEntity<String> updateEstadoByIdPedido(@PathVariable Long idPedido, @PathVariable String nuevoEstado){
         return ResponseEntity.status(HttpStatus.OK).body(pagoService.updateEstadoById(idPedido, nuevoEstado));

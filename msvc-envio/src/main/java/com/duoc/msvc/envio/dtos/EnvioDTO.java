@@ -7,12 +7,13 @@ import java.math.BigDecimal;
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
 public class EnvioDTO {
-    private BigDecimal costo;
+    private Long id;
+    private Long idPedido;
     private String direccion;
+    private String region;
+    private BigDecimal costo;
     private String ciudad;
     private String comuna;
-    private String region;
     private String codigoPostal;
     private String estado;
-    private Long idPedido;
 }

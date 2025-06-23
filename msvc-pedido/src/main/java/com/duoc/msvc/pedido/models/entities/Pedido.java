@@ -19,7 +19,6 @@ import java.util.List;
 @Table(name = "pedidos")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pedido {
@@ -31,20 +30,18 @@ public class Pedido {
     @Column(updatable = false) // Para que no se pueda cambiar la fecha
     private String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")); // Fecha de la realización del pedido
 
-    @PositiveOrZero
-    private BigDecimal costoEnvio; // Dato genenerado aleatoriamente desde el msvc-envio para simulación
+    @Column(name = "costo_envio")
+    private BigDecimal costoEnvio = BigDecimal.ZERO;
 
     private String metodoPago;
 
-    @Column(nullable = false)
-    @PositiveOrZero
-    private BigDecimal totalDetalles; // Dato calculado: sumar todos los detalles (cantidad * precio)
+    @Column(name = "total_detalles")
+    private BigDecimal totalDetalles = BigDecimal.ZERO;
 
     // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
 
-    @Column(nullable = false)
-    @PositiveOrZero
-    private BigDecimal montoFinal;  // Dato calculado: suma el totalDetalles con el costoEnvio.
+    @Column(name = "monto_final")
+    private BigDecimal montoFinal = BigDecimal.ZERO;
 
     @Column(nullable = false)
     private String estado = "Nuevo"; // Nuevo, Pagado, Enviado, Cancelado
@@ -57,4 +54,18 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallesPedido = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "Pedido{" +
+                "idPedido=" + idPedido +
+                ", fecha='" + fecha + '\'' +
+                ", costoEnvio=" + costoEnvio +
+                ", metodoPago='" + metodoPago + '\'' +
+                ", totalDetalles=" + totalDetalles +
+                ", montoFinal=" + montoFinal +
+                ", estado='" + estado + '\'' +
+                ", idCliente=" + idCliente +
+                ", detallesPedido.size=" + (detallesPedido != null ? detallesPedido.size() : 0) +
+                '}';
+    }
 }

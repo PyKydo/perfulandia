@@ -9,6 +9,7 @@ import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,26 +37,35 @@ public class UsuarioServicelmpl implements UsuarioService{
         return convertToDTO(usuario);
     }
 
+    @Transactional
     @Override
     public UsuarioDTO save(Usuario usuario) {
         return convertToDTO(this.usuarioRepository.save(usuario));
     }
 
+    @Transactional
     @Override
-    public UsuarioDTO updateById(Long id, Usuario usuarioActualizado) {
-        Usuario usuarioExistente = usuarioRepository.findById(id)
+    public UsuarioDTO updateById(Long id, Usuario usuario) {
+        Usuario usuarioDb = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
 
-        usuarioActualizado.setIdUsuario(usuarioExistente.getIdUsuario());
+        usuarioDb.setNombre(usuario.getNombre());
+        usuarioDb.setApellido(usuario.getApellido());
+        usuarioDb.setCorreo(usuario.getCorreo());
+        usuarioDb.setTelefono(usuario.getTelefono());
+        usuarioDb.setRegion(usuario.getRegion());
+        usuarioDb.setComuna(usuario.getComuna());
+        usuarioDb.setCiudad(usuario.getCiudad());
+        usuarioDb.setDireccion(usuario.getDireccion());
+        usuarioDb.setCodigoPostal(usuario.getCodigoPostal());
 
-        return convertToDTO(usuarioRepository.save(usuarioActualizado));
+        return convertToDTO(usuarioRepository.save(usuarioDb));
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new UsuarioException("El usuario con id " + id + " no existe");
-        }
+        usuarioRepository.findById(id).orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
         this.usuarioRepository.deleteById(id);
     }
 
@@ -127,16 +137,15 @@ public class UsuarioServicelmpl implements UsuarioService{
     @Override
     public UsuarioDTO convertToDTO(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();
-        dto.setIdCliente(usuario.getIdUsuario());
-        dto.setCiudad(usuario.getCiudad());
-        dto.setDireccion(usuario.getDireccion());
+        dto.setId(usuario.getIdUsuario());
         dto.setNombre(usuario.getNombre());
         dto.setApellido(usuario.getApellido());
+        dto.setRegion(usuario.getRegion());
+        dto.setComuna(usuario.getComuna());
+        dto.setCiudad(usuario.getCiudad());
+        dto.setDireccion(usuario.getDireccion());
         dto.setCorreo(usuario.getCorreo());
         dto.setTelefono(usuario.getTelefono());
-        dto.setComuna(usuario.getComuna());
-        dto.setRegion(usuario.getRegion());
-        dto.setCodigoPostal(usuario.getCodigoPostal());
         return dto;
     }
 }
