@@ -65,7 +65,7 @@ class EnvioServiceTest {
         when(envioRepository.findById(2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> envioService.findById(2L))
                 .isInstanceOf(EnvioException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no existe");
         verify(envioRepository).findById(2L);
     }
 
@@ -102,7 +102,7 @@ class EnvioServiceTest {
         Envio updated = new Envio();
         assertThatThrownBy(() -> envioService.updateById(2L, updated))
                 .isInstanceOf(EnvioException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no existe");
         verify(envioRepository).findById(2L);
     }
 
@@ -120,7 +120,7 @@ class EnvioServiceTest {
         when(envioRepository.findById(2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> envioService.deleteById(2L))
                 .isInstanceOf(EnvioException.class)
-                .hasMessageContaining("no se encuentra");
+                .hasMessageContaining("no existe");
         verify(envioRepository).findById(2L);
     }
 
