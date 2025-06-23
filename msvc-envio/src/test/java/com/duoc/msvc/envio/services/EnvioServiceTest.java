@@ -108,20 +108,19 @@ class EnvioServiceTest {
 
     @Test
     void shouldDeleteEnvio() {
-        when(envioRepository.findById(1L)).thenReturn(Optional.of(envio));
+        when(envioRepository.existsById(1L)).thenReturn(true);
         doNothing().when(envioRepository).deleteById(1L);
         envioService.deleteById(1L);
-        verify(envioRepository).findById(1L);
+        verify(envioRepository).existsById(1L);
         verify(envioRepository).deleteById(1L);
     }
 
     @Test
     void shouldThrowExceptionWhenDeleteEnvioNotFound() {
-        when(envioRepository.findById(2L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> envioService.deleteById(2L))
                 .isInstanceOf(EnvioException.class)
                 .hasMessageContaining("no existe");
-        verify(envioRepository).findById(2L);
+        verify(envioRepository).existsById(2L);
     }
 
     @Test
