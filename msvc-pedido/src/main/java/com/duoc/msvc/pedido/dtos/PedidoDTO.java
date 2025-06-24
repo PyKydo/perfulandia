@@ -1,14 +1,16 @@
 package com.duoc.msvc.pedido.dtos;
 
-
 import lombok.*;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-public class PedidoDTO {
+@Relation(collectionRelation = "pedidos", itemRelation = "pedido")
+public class PedidoDTO extends RepresentationModel<PedidoDTO> {
     private Long id;
     private Long idCliente;
     private String nombreCliente;
@@ -23,5 +25,4 @@ public class PedidoDTO {
     private BigDecimal montoFinal;
     private String metodoPago;
     private String estado;
-
 }

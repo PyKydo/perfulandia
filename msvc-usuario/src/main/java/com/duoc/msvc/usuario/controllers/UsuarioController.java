@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class UsuarioController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDTO.class)))
     })
     @GetMapping
-    public ResponseEntity<List<UsuarioDTO>> findAll(){
+    public ResponseEntity<CollectionModel<UsuarioDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(this.usuarioService.findAll());
     }
 

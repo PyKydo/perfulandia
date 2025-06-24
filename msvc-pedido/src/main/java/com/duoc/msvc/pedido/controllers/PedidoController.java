@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,7 +32,7 @@ public class PedidoController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = PedidoDTO.class)))
     })
     @GetMapping
-    public ResponseEntity<List<PedidoDTO>> findAll(){
+    public ResponseEntity<CollectionModel<PedidoDTO>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findAll());
     }
 
@@ -65,7 +66,7 @@ public class PedidoController {
     }
 
     @GetMapping("/cliente/{id}")
-    public ResponseEntity<List<PedidoDTO>> findAllByIdCliente(@PathVariable Long id){
+    public ResponseEntity<CollectionModel<PedidoDTO>> findAllByIdCliente(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(this.pedidoService.findByIdCliente(id));
     }
 

@@ -1,11 +1,14 @@
 package com.duoc.msvc.producto.services;
 
+import com.duoc.msvc.producto.assemblers.ProductoDTOModelAssembler;
 import com.duoc.msvc.producto.dtos.ProductoDTO;
+import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,38 +17,63 @@ import java.util.List;
 public class ProductoServiceImpl implements ProductoService{
     @Autowired
     private ProductoRepository productoRepository;
+    @Autowired
+    private ProductoDTOModelAssembler assembler;
 
     @Override
-    public List<ProductoDTO> findAll() {
+    public List<ProductoDTO> findAllSimple() {
         return this.productoRepository.findAll().stream().map(this::convertToDTO).toList();
     }
 
     @Override
-    public ProductoDTO findById(Long id) {
-        Producto producto = this.productoRepository.findById(id).orElseThrow(
-                () -> new ProductoException("El producto con el id " + id + " no existe")
-        );
-
-        return convertToDTO(producto);
-    }
-    @Override
-    public List<ProductoDTO> findByCategoria(String categoria) {
+    public List<ProductoDTO> findByCategoriaSimple(String categoria) {
         return this.productoRepository.findByCategoria(categoria).stream().map(this::convertToDTO).toList();
     }
 
-    @Transactional
     @Override
-    public ProductoDTO save(Producto producto) {
-        return convertToDTO(this.productoRepository.save(producto));
+    public List<ProductoDTO> findByMarcaSimple(String marca) {
+        return this.productoRepository.findByMarca(marca).stream().map(this::convertToDTO).toList();
+    }
+
+    @Override
+    public CollectionModel<ProductoHateoasDTO> findAllHateoas() {
+        List<Producto> productos = this.productoRepository.findAll();
+        return assembler.toCollectionModel(productos);
+    }
+
+    @Override
+    public CollectionModel<ProductoHateoasDTO> findByCategoria(String categoria) {
+        List<Producto> productos = this.productoRepository.findByCategoria(categoria);
+        return assembler.toCollectionModel(productos);
+    }
+
+    @Override
+    public CollectionModel<ProductoHateoasDTO> findByMarca(String marca) {
+        List<Producto> productos = this.productoRepository.findByMarca(marca);
+        return assembler.toCollectionModel(productos);
+    }
+
+    @Override
+    public ProductoHateoasDTO findById(Long id) {
+        Producto producto = this.productoRepository.findById(id).orElseThrow(
+                () -> new ProductoException("El producto con el id " + id + " no existe")
+        );
+        return assembler.toModel(producto);
     }
 
     @Transactional
     @Override
-    public ProductoDTO updateById(Long id, Producto producto) {
+    public ProductoHateoasDTO save(Producto producto) {
+        Producto savedProducto = this.productoRepository.save(producto);
+        return assembler.toModel(savedProducto);
+    }
+
+    @Transactional
+    @Override
+    public ProductoHateoasDTO updateById(Long id, Producto producto) {
         Producto productoDb = productoRepository.findById(id).orElseThrow(
             () -> new ProductoException("El producto con el id " + id + " no existe en la base de datos")
         );
-
         productoDb.setNombre(producto.getNombre());
         productoDb.setMarca(producto.getMarca());
         productoDb.setPrecio(producto.getPrecio());
@@ -53,8 +81,8 @@ public class ProductoServiceImpl implements ProductoService{
         productoDb.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
         productoDb.setCategoria(producto.getCategoria());
         productoDb.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
-        
-        return convertToDTO(productoRepository.save(productoDb));
+        Producto updatedProducto = productoRepository.save(productoDb);
+        return assembler.toModel(updatedProducto);
     }
 
     @Transactional
@@ -66,8 +94,7 @@ public class ProductoServiceImpl implements ProductoService{
         productoRepository.deleteById(id);
     }
 
-    @Override
-    public ProductoDTO convertToDTO(Producto producto) {
+    private ProductoDTO convertToDTO(Producto producto) {
         ProductoDTO dto = new ProductoDTO();
         dto.setId(producto.getIdProducto());
         dto.setNombre(producto.getNombre());

@@ -1,6 +1,7 @@
 package com.duoc.msvc.usuario.services;
 
 
+import com.duoc.msvc.usuario.assemblers.UsuarioDTOModelAssembler;
 import com.duoc.msvc.usuario.clients.PedidoClient;
 import com.duoc.msvc.usuario.dtos.UsuarioDTO;
 import com.duoc.msvc.usuario.dtos.pojos.PedidoClientDTO;
@@ -8,6 +9,7 @@ import com.duoc.msvc.usuario.exceptions.UsuarioException;
 import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +23,13 @@ public class UsuarioServicelmpl implements UsuarioService{
     private UsuarioRepository usuarioRepository;
     @Autowired
     private PedidoClient pedidoClient;
+    @Autowired
+    private UsuarioDTOModelAssembler assembler;
 
     @Override
-    public List<UsuarioDTO> findAll(){
-        return this.usuarioRepository.findAll().stream().map(this::convertToDTO).toList();
+    public CollectionModel<UsuarioDTO> findAll(){
+        List<Usuario> usuarios = this.usuarioRepository.findAll();
+        return assembler.toCollectionModel(usuarios);
     }
 
 
@@ -34,13 +39,14 @@ public class UsuarioServicelmpl implements UsuarioService{
                 () -> new UsuarioException("El usuario con id " + id + " no existe")
         );
 
-        return convertToDTO(usuario);
+        return assembler.toModel(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioDTO save(Usuario usuario) {
-        return convertToDTO(this.usuarioRepository.save(usuario));
+        Usuario savedUsuario = this.usuarioRepository.save(usuario);
+        return assembler.toModel(savedUsuario);
     }
 
     @Transactional
@@ -59,7 +65,8 @@ public class UsuarioServicelmpl implements UsuarioService{
         usuarioDb.setDireccion(usuario.getDireccion());
         usuarioDb.setCodigoPostal(usuario.getCodigoPostal());
 
-        return convertToDTO(usuarioRepository.save(usuarioDb));
+        Usuario updatedUsuario = usuarioRepository.save(usuarioDb);
+        return assembler.toModel(updatedUsuario);
     }
 
     @Transactional
@@ -132,20 +139,5 @@ public class UsuarioServicelmpl implements UsuarioService{
             throw new UsuarioException("El cliente con id " + idCliente + " no existe");
         }
         return pedidoClient.findAllByIdCliente(idCliente);
-    }
-
-    @Override
-    public UsuarioDTO convertToDTO(Usuario usuario) {
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(usuario.getIdUsuario());
-        dto.setNombre(usuario.getNombre());
-        dto.setApellido(usuario.getApellido());
-        dto.setRegion(usuario.getRegion());
-        dto.setComuna(usuario.getComuna());
-        dto.setCiudad(usuario.getCiudad());
-        dto.setDireccion(usuario.getDireccion());
-        dto.setCorreo(usuario.getCorreo());
-        dto.setTelefono(usuario.getTelefono());
-        return dto;
     }
 }

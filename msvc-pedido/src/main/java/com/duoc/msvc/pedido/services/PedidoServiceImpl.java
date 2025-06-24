@@ -1,5 +1,6 @@
 package com.duoc.msvc.pedido.services;
 
+import com.duoc.msvc.pedido.assemblers.PedidoDTOModelAssembler;
 import com.duoc.msvc.pedido.clients.*;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
 import com.duoc.msvc.pedido.dtos.PedidoDTO;
@@ -11,6 +12,7 @@ import com.duoc.msvc.pedido.repositories.PedidoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,19 +34,19 @@ public class PedidoServiceImpl implements PedidoService{
     private EnvioClient envioClient;
     @Autowired
     private PagoClient pagoClient;
+    @Autowired
+    private PedidoDTOModelAssembler assembler;
 
     @Override
-    public List<PedidoDTO> findAll() {
-        return this.pedidoRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .toList();
+    public CollectionModel<PedidoDTO> findAll() {
+        List<Pedido> pedidos = this.pedidoRepository.findAll();
+        return assembler.toCollectionModel(pedidos);
     }
 
     @Override
-    public List<PedidoDTO> findByIdCliente(Long idCliente) {
-        return this.pedidoRepository.findByIdCliente(idCliente).stream()
-                .map(this::convertToDTO)
-                .toList();
+    public CollectionModel<PedidoDTO> findByIdCliente(Long idCliente) {
+        List<Pedido> pedidos = this.pedidoRepository.findByIdCliente(idCliente);
+        return assembler.toCollectionModel(pedidos);
     }
 
     @Override
@@ -244,6 +246,25 @@ public class PedidoServiceImpl implements PedidoService{
                 .toList();
 
         dto.setDetallesPedido(detallesDTO);
-        return dto;
+        
+        // Agregar enlaces HATEOAS usando el assembler
+        PedidoDTO dtoWithLinks = assembler.toModel(pedido);
+        // Copiar los datos del DTO original al DTO con enlaces
+        dtoWithLinks.setId(dto.getId());
+        dtoWithLinks.setIdCliente(dto.getIdCliente());
+        dtoWithLinks.setDireccion(dto.getDireccion());
+        dtoWithLinks.setRegion(dto.getRegion());
+        dtoWithLinks.setComuna(dto.getComuna());
+        dtoWithLinks.setNombreCliente(dto.getNombreCliente());
+        dtoWithLinks.setApellidoCliente(dto.getApellidoCliente());
+        dtoWithLinks.setCorreo(dto.getCorreo());
+        dtoWithLinks.setCostoEnvio(dto.getCostoEnvio());
+        dtoWithLinks.setTotalDetalles(dto.getTotalDetalles());
+        dtoWithLinks.setMontoFinal(dto.getMontoFinal());
+        dtoWithLinks.setMetodoPago(dto.getMetodoPago());
+        dtoWithLinks.setEstado(dto.getEstado());
+        dtoWithLinks.setDetallesPedido(dto.getDetallesPedido());
+        
+        return dtoWithLinks;
     }
 }
