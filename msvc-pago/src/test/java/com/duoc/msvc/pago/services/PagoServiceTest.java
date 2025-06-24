@@ -1,6 +1,9 @@
 package com.duoc.msvc.pago.services;
 
+import com.duoc.msvc.pago.clients.PedidoClient;
+import com.duoc.msvc.pago.clients.EnvioClient;
 import com.duoc.msvc.pago.dtos.PagoDTO;
+import com.duoc.msvc.pago.dtos.pojos.PedidoClientDTO;
 import com.duoc.msvc.pago.exceptions.PagoException;
 import com.duoc.msvc.pago.models.Pago;
 import com.duoc.msvc.pago.repositories.PagoRepository;
@@ -10,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -24,6 +29,10 @@ class PagoServiceTest {
 
     @Mock
     private PagoRepository pagoRepository;
+    @Mock
+    private PedidoClient pedidoClient;
+    @Mock
+    private EnvioClient envioClient;
     @InjectMocks
     private PagoServiceImpl pagoService;
 
@@ -68,14 +77,25 @@ class PagoServiceTest {
 
     @Test
     void shouldCreatePago() {
+        // Mock para pedidoClient.findById que se llama en validarPedido
+        PedidoClientDTO mockPedido = new PedidoClientDTO();
+        ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(mockPedido, HttpStatus.OK);
+        when(pedidoClient.findById(100L)).thenReturn(response);
+        
         when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
         PagoDTO dto = pagoService.save(pago);
         assertThat(dto.getMetodo()).isEqualTo("Tarjeta");
         verify(pagoRepository).save(pago);
+        verify(pedidoClient).findById(100L);
     }
 
     @Test
     void shouldUpdatePago() {
+        // Mock para pedidoClient.findById que se llama en validarPedido
+        PedidoClientDTO mockPedido = new PedidoClientDTO();
+        ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(mockPedido, HttpStatus.OK);
+        when(pedidoClient.findById(100L)).thenReturn(response);
+        
         Pago updated = new Pago();
         updated.setMetodo("Efectivo");
         updated.setMonto(BigDecimal.valueOf(20000));
@@ -91,6 +111,7 @@ class PagoServiceTest {
         assertThat(dto.getEstado()).isEqualTo("Completado");
         verify(pagoRepository).findById(1L);
         verify(pagoRepository).save(any(Pago.class));
+        verify(pedidoClient).findById(100L);
     }
 
     @Test

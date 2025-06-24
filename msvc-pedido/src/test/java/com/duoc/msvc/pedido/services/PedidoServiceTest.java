@@ -11,6 +11,7 @@ import com.duoc.msvc.pedido.dtos.pojos.ProductoClientDTO;
 import com.duoc.msvc.pedido.dtos.pojos.UsuarioClientDTO;
 import com.duoc.msvc.pedido.dtos.pojos.InventarioClientDTO;
 import com.duoc.msvc.pedido.dtos.pojos.EnvioClientDTO;
+import com.duoc.msvc.pedido.dtos.pojos.PagoClientDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,18 +73,62 @@ class PedidoServiceTest {
     @Test
     void shouldListAllPedidos() {
         when(pedidoRepository.findAll()).thenReturn(Arrays.asList(pedido));
+        
+        // Mock para usuarioClient.getUsuarioById que se llama en convertToDTO
+        UsuarioClientDTO mockUsuario = new UsuarioClientDTO();
+        mockUsuario.setIdCliente(10L);
+        mockUsuario.setNombre("Juan");
+        mockUsuario.setApellido("Pérez");
+        mockUsuario.setCiudad("Santiago");
+        mockUsuario.setRegion("Metropolitana");
+        mockUsuario.setComuna("Providencia");
+        mockUsuario.setCodigoPostal("7500000");
+        mockUsuario.setDireccion("Av. Providencia 123");
+        mockUsuario.setCorreo("juan.perez@email.com");
+        when(usuarioClient.getUsuarioById(10L)).thenReturn(mockUsuario);
+        
+        // Mock para productoClient.findById que se llama en convertToDTO
+        ProductoClientDTO mockProducto = new ProductoClientDTO();
+        mockProducto.setNombre("Producto Test");
+        mockProducto.setMarca("Marca Test");
+        when(productoClient.findById(5L)).thenReturn(mockProducto);
+        
         List<PedidoDTO> result = pedidoService.findAll();
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getIdCliente()).isEqualTo(10L);
         verify(pedidoRepository).findAll();
+        verify(usuarioClient).getUsuarioById(10L);
+        verify(productoClient).findById(5L);
     }
 
     @Test
     void shouldFindPedidoById() {
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+        
+        // Mock para usuarioClient.getUsuarioById que se llama en convertToDTO
+        UsuarioClientDTO mockUsuario = new UsuarioClientDTO();
+        mockUsuario.setIdCliente(10L);
+        mockUsuario.setNombre("Juan");
+        mockUsuario.setApellido("Pérez");
+        mockUsuario.setCiudad("Santiago");
+        mockUsuario.setRegion("Metropolitana");
+        mockUsuario.setComuna("Providencia");
+        mockUsuario.setCodigoPostal("7500000");
+        mockUsuario.setDireccion("Av. Providencia 123");
+        mockUsuario.setCorreo("juan.perez@email.com");
+        when(usuarioClient.getUsuarioById(10L)).thenReturn(mockUsuario);
+        
+        // Mock para productoClient.findById que se llama en convertToDTO
+        ProductoClientDTO mockProducto = new ProductoClientDTO();
+        mockProducto.setNombre("Producto Test");
+        mockProducto.setMarca("Marca Test");
+        when(productoClient.findById(5L)).thenReturn(mockProducto);
+        
         PedidoDTO dto = pedidoService.findById(1L);
         assertThat(dto.getIdCliente()).isEqualTo(10L);
         verify(pedidoRepository).findById(1L);
+        verify(usuarioClient).getUsuarioById(10L);
+        verify(productoClient).findById(5L);
     }
 
     @Test
@@ -110,21 +155,45 @@ class PedidoServiceTest {
         mockSucursal.setIdSucursal(2L);
         when(sucursalClient.getSucursalBestStockByIdProducto(5L)).thenReturn(mockSucursal);
 
+        when(envioClient.getCostoEnvio()).thenReturn(BigDecimal.valueOf(5000));
+
+        UsuarioClientDTO mockUsuario = new UsuarioClientDTO();
+        mockUsuario.setIdCliente(10L);
+        mockUsuario.setNombre("Juan");
+        mockUsuario.setApellido("Pérez");
+        mockUsuario.setCiudad("Santiago");
+        mockUsuario.setRegion("Metropolitana");
+        mockUsuario.setComuna("Providencia");
+        mockUsuario.setCodigoPostal("7500000");
+        mockUsuario.setDireccion("Av. Providencia 123");
+        mockUsuario.setCorreo("juan.perez@email.com");
+        when(usuarioClient.getUsuarioById(10L)).thenReturn(mockUsuario);
+
         EnvioClientDTO mockEnvio = new EnvioClientDTO();
         mockEnvio.setCosto(BigDecimal.valueOf(5000));
         when(envioClient.save(any())).thenReturn(mockEnvio);
+
+        // Mock para pagoClient.save que retorna PagoClientDTO
+        PagoClientDTO mockPago = new PagoClientDTO();
+        mockPago.setIdPedido(1L);
+        mockPago.setMonto(BigDecimal.valueOf(25000));
+        mockPago.setMetodo("Tarjeta");
+        when(pagoClient.save(any())).thenReturn(mockPago);
 
         when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
 
         PedidoDTO dto = pedidoService.save(pedido);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getTotalDetalles()).isEqualTo(new BigDecimal("10000"));
-        assertThat(dto.getMontoFinal()).isEqualTo(new BigDecimal("15000"));
+        assertThat(dto.getTotalDetalles()).isEqualTo(new BigDecimal("20000"));
+        assertThat(dto.getMontoFinal()).isEqualTo(new BigDecimal("25000"));
         verify(pedidoRepository).save(any(Pedido.class));
-        verify(productoClient).findById(5L);
+        verify(productoClient, times(2)).findById(5L);
         verify(sucursalClient).getSucursalBestStockByIdProducto(5L);
         verify(sucursalClient).updateStock(eq(2L), eq(5L), anyInt());
+        verify(envioClient).getCostoEnvio();
+        verify(usuarioClient, times(2)).getUsuarioById(10L);
+        verify(pagoClient).save(any());
         verify(envioClient).save(any(EnvioClientDTO.class));
     }
 
@@ -154,7 +223,8 @@ class PedidoServiceTest {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getEstado()).isEqualTo("Enviado");
-        assertThat(dto.getNombreCliente()).isEqualTo("Cliente Actualizado");
+        assertThat(dto.getNombreCliente()).isEqualTo("Cliente");
+        assertThat(dto.getApellidoCliente()).isEqualTo("Actualizado");
         verify(pedidoRepository).save(any(Pedido.class));
     }
 
