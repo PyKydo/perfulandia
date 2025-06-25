@@ -1,6 +1,8 @@
 package com.duoc.msvc.sucursal.services;
 
-import com.duoc.msvc.sucursal.dtos.SucursalDTO;
+import com.duoc.msvc.sucursal.dtos.SucursalCreateDTO;
+import com.duoc.msvc.sucursal.dtos.SucursalGetDTO;
+import com.duoc.msvc.sucursal.dtos.SucursalUpdateDTO;
 import com.duoc.msvc.sucursal.exceptions.SucursalException;
 import com.duoc.msvc.sucursal.models.entities.Sucursal;
 import com.duoc.msvc.sucursal.repositories.SucursalRepository;
@@ -42,7 +44,7 @@ class SucursalServiceTest {
     @Test
     void shouldListAllSucursales() {
         when(sucursalRepository.findAll()).thenReturn(Arrays.asList(sucursal));
-        List<SucursalDTO> result = sucursalService.findAll();
+        List<SucursalGetDTO> result = sucursalService.findAll();
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDireccion()).isEqualTo("Av. Central 123");
         verify(sucursalRepository).findAll();
@@ -51,7 +53,7 @@ class SucursalServiceTest {
     @Test
     void shouldFindSucursalById() {
         when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
-        SucursalDTO dto = sucursalService.findById(1L);
+        SucursalGetDTO dto = sucursalService.findById(1L);
         assertThat(dto.getDireccion()).isEqualTo("Av. Central 123");
         verify(sucursalRepository).findById(1L);
     }
@@ -68,14 +70,21 @@ class SucursalServiceTest {
     @Test
     void shouldCreateSucursal() {
         when(sucursalRepository.save(any(Sucursal.class))).thenReturn(sucursal);
-        SucursalDTO dto = sucursalService.save(sucursal);
+        SucursalCreateDTO createDTO = new SucursalCreateDTO();
+        createDTO.setDireccion(sucursal.getDireccion());
+        createDTO.setRegion(sucursal.getRegion());
+        createDTO.setComuna(sucursal.getComuna());
+        createDTO.setCantidadPersonal(sucursal.getCantidadPersonal());
+        createDTO.setHorariosAtencion(sucursal.getHorariosAtencion());
+        SucursalGetDTO dto = sucursalService.save(createDTO);
         assertThat(dto.getDireccion()).isEqualTo("Av. Central 123");
-        verify(sucursalRepository).save(sucursal);
+        verify(sucursalRepository).save(any(Sucursal.class));
     }
 
     @Test
     void shouldUpdateSucursal() {
-        Sucursal updated = new Sucursal();
+        SucursalUpdateDTO updated = new SucursalUpdateDTO();
+        updated.setId(1L);
         updated.setDireccion("Av. Nueva 456");
         updated.setRegion("Valparaíso");
         updated.setComuna("Viña del Mar");
@@ -83,9 +92,9 @@ class SucursalServiceTest {
         updated.setHorariosAtencion("Lun-Sab 8:00-20:00");
 
         when(sucursalRepository.findById(1L)).thenReturn(Optional.of(sucursal));
-        when(sucursalRepository.save(any(Sucursal.class))).thenReturn(updated);
+        when(sucursalRepository.save(any(Sucursal.class))).thenReturn(sucursal);
 
-        SucursalDTO dto = sucursalService.updateById(1L, updated);
+        SucursalGetDTO dto = sucursalService.updateById(1L, updated);
         assertThat(dto.getDireccion()).isEqualTo("Av. Nueva 456");
         verify(sucursalRepository).findById(1L);
         verify(sucursalRepository).save(any(Sucursal.class));
@@ -94,7 +103,8 @@ class SucursalServiceTest {
     @Test
     void shouldThrowExceptionWhenUpdateSucursalNotFound() {
         when(sucursalRepository.findById(2L)).thenReturn(Optional.empty());
-        Sucursal updated = new Sucursal();
+        SucursalUpdateDTO updated = new SucursalUpdateDTO();
+        updated.setId(2L);
         assertThatThrownBy(() -> sucursalService.updateById(2L, updated))
                 .isInstanceOf(SucursalException.class)
                 .hasMessageContaining("no encontrada");
@@ -121,7 +131,7 @@ class SucursalServiceTest {
 
     @Test
     void shouldConvertToDTO() {
-        SucursalDTO dto = sucursalService.convertToDTO(sucursal);
+        SucursalGetDTO dto = sucursalService.convertToDTO(sucursal);
         assertThat(dto.getDireccion()).isEqualTo("Av. Central 123");
         assertThat(dto.getRegion()).isEqualTo("Metropolitana");
         assertThat(dto.getCantidadPersonal()).isEqualTo(10);

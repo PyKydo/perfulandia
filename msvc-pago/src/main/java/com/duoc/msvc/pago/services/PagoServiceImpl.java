@@ -13,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.duoc.msvc.pago.dtos.PagoHateoasDTO;
+import org.springframework.hateoas.CollectionModel;
+import com.duoc.msvc.pago.assemblers.PagoDTOModelAssembler;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,24 +32,25 @@ public class PagoServiceImpl implements PagoService{
     @Autowired
     private EnvioClient envioClient;
 
+    @Autowired
+    private PagoDTOModelAssembler assembler;
 
     @Override
-    public List<PagoDTO> findAll() {
-        return this.pagoRepository.findAll().stream().map(this::convertToDTO).toList();
+    public CollectionModel<PagoHateoasDTO> findAll() {
+        return assembler.toCollectionModel(this.pagoRepository.findAll());
     }
 
     @Override
-    public List<PagoDTO> findByEstado(String estado) {
-        return this.pagoRepository.findByEstado(estado).stream().map(this::convertToDTO).toList();
+    public CollectionModel<PagoHateoasDTO> findByEstado(String estado) {
+        return assembler.toCollectionModel(this.pagoRepository.findByEstado(estado));
     }
 
     @Override
-    public PagoDTO findById(Long id) {
+    public PagoHateoasDTO findById(Long id) {
         Pago pago = this.pagoRepository.findById(id).orElseThrow(
                 () -> new PagoException("El pago con id " + id + " no se encuentra en la base de datos")
         );
-
-        return convertToDTO(pago);
+        return assembler.toModel(pago);
     }
 
     @Override
@@ -90,26 +94,14 @@ public class PagoServiceImpl implements PagoService{
     }
 
     @Override
-    public PagoDTO save(Pago pago) {
+    public PagoHateoasDTO save(Pago pago) {
+        if (pago.getIdPedido() == null || pago.getIdPedido() == 0) {
+            throw new PagoException("El idPedido no puede ser nulo ni igual a 0");
+        }
         validarPedido(pago.getIdPedido());
         pago.setEstado("Pendiente");
-        pago.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-
-        return convertToDTO(this.pagoRepository.save(pago));
-    }
-
-    @Override
-    public PagoDTO convertToDTO(Pago pago){
-        PagoDTO dto = new PagoDTO();
-
-        dto.setId(pago.getIdPago());
-        dto.setEstado(pago.getEstado());
-        dto.setMetodo(pago.getMetodo());
-        dto.setFecha(pago.getFecha());
-        dto.setMonto(pago.getMonto());
-        dto.setIdPedido(pago.getIdPedido());
-
-        return dto;
+        pago.setFecha(java.time.LocalDateTime.now());
+        return assembler.toModel(this.pagoRepository.save(pago));
     }
 
     public void validarPedido(Long idPedido) {
@@ -127,15 +119,18 @@ public class PagoServiceImpl implements PagoService{
 
     @Transactional
     @Override
-    public PagoDTO updateById(Long id, Pago pago) {
+    public PagoHateoasDTO updateById(Long id, Pago pago) {
+        if (pago.getIdPedido() == null || pago.getIdPedido() == 0) {
+            throw new PagoException("El idPedido no puede ser nulo ni igual a 0");
+        }
         Pago pagoDb = pagoRepository.findById(id).orElseThrow(
             () -> new PagoException("El pago con id " + id + " no existe en la base de datos")
         );
         validarPedido(pago.getIdPedido());
         pagoDb.setMetodo(pago.getMetodo());
         pagoDb.setMonto(pago.getMonto());
-        
-        return convertToDTO(pagoRepository.save(pagoDb));
+        pagoDb.setEstado(pago.getEstado());
+        return assembler.toModel(pagoRepository.save(pagoDb));
     }
 
     @Transactional

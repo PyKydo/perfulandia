@@ -1,10 +1,11 @@
 package com.duoc.msvc.usuario.services;
 
 import com.duoc.msvc.usuario.clients.PedidoClient;
-import com.duoc.msvc.usuario.dtos.UsuarioDTO;
+import com.duoc.msvc.usuario.dtos.UsuarioHateoasDTO;
 import com.duoc.msvc.usuario.exceptions.UsuarioException;
 import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.repositories.UsuarioRepository;
+import com.duoc.msvc.usuario.assemblers.UsuarioDTOModelAssembler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -32,7 +32,7 @@ class UsuarioServiceTest {
     private Usuario usuario;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         usuario = new Usuario();
         usuario.setIdUsuario(1L);
         usuario.setNombre("Juan");
@@ -44,21 +44,25 @@ class UsuarioServiceTest {
         usuario.setCiudad("Santiago");
         usuario.setDireccion("Calle Falsa 123");
         usuario.setCodigoPostal("1234567");
+        // Inyectar assembler manualmente
+        java.lang.reflect.Field assemblerField = usuarioService.getClass().getDeclaredField("assembler");
+        assemblerField.setAccessible(true);
+        assemblerField.set(usuarioService, new com.duoc.msvc.usuario.assemblers.UsuarioDTOModelAssembler());
     }
 
     @Test
     void shouldListAllUsuarios() {
         when(usuarioRepository.findAll()).thenReturn(Arrays.asList(usuario));
-        List<UsuarioDTO> result = usuarioService.findAll();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getNombre()).isEqualTo("Juan");
+        var result = usuarioService.findAll();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().iterator().next().getNombre()).isEqualTo("Juan");
         verify(usuarioRepository).findAll();
     }
 
     @Test
     void shouldFindUsuarioById() {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        UsuarioDTO dto = usuarioService.findById(1L);
+        UsuarioHateoasDTO dto = usuarioService.findById(1L);
         assertThat(dto.getNombre()).isEqualTo("Juan");
         verify(usuarioRepository).findById(1L);
     }
@@ -75,7 +79,7 @@ class UsuarioServiceTest {
     @Test
     void shouldCreateUsuario() {
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-        UsuarioDTO dto = usuarioService.save(usuario);
+        UsuarioHateoasDTO dto = usuarioService.save(usuario);
         assertThat(dto.getNombre()).isEqualTo("Juan");
         verify(usuarioRepository).save(usuario);
     }
@@ -96,7 +100,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(updated);
 
-        UsuarioDTO dto = usuarioService.updateById(1L, updated);
+        UsuarioHateoasDTO dto = usuarioService.updateById(1L, updated);
         assertThat(dto.getNombre()).isEqualTo("Pedro");
         verify(usuarioRepository).findById(1L);
         verify(usuarioRepository).save(any(Usuario.class));
@@ -132,7 +136,8 @@ class UsuarioServiceTest {
 
     @Test
     void shouldConvertToDTO() {
-        UsuarioDTO dto = usuarioService.convertToDTO(usuario);
+        UsuarioDTOModelAssembler assembler = new UsuarioDTOModelAssembler();
+        UsuarioHateoasDTO dto = assembler.toModel(usuario);
         assertThat(dto.getNombre()).isEqualTo("Juan");
         assertThat(dto.getApellido()).isEqualTo("Pérez");
         assertThat(dto.getCorreo()).isEqualTo("juan.perez@mail.com");

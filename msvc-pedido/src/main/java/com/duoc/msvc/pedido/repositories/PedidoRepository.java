@@ -12,4 +12,6 @@ import java.util.List;
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByIdCliente(Long idCliente);
 
+    @Query("SELECT p FROM Pedido p LEFT JOIN FETCH p.detallesPedido")
+    List<Pedido> findAllWithDetalles();
 }

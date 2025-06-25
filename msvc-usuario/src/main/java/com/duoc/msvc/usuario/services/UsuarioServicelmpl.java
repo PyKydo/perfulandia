@@ -3,7 +3,7 @@ package com.duoc.msvc.usuario.services;
 
 import com.duoc.msvc.usuario.assemblers.UsuarioDTOModelAssembler;
 import com.duoc.msvc.usuario.clients.PedidoClient;
-import com.duoc.msvc.usuario.dtos.UsuarioDTO;
+import com.duoc.msvc.usuario.dtos.UsuarioHateoasDTO;
 import com.duoc.msvc.usuario.dtos.pojos.PedidoClientDTO;
 import com.duoc.msvc.usuario.exceptions.UsuarioException;
 import com.duoc.msvc.usuario.models.entities.Usuario;
@@ -27,14 +27,14 @@ public class UsuarioServicelmpl implements UsuarioService{
     private UsuarioDTOModelAssembler assembler;
 
     @Override
-    public CollectionModel<UsuarioDTO> findAll(){
+    public CollectionModel<UsuarioHateoasDTO> findAll(){
         List<Usuario> usuarios = this.usuarioRepository.findAll();
         return assembler.toCollectionModel(usuarios);
     }
 
 
     @Override
-    public UsuarioDTO findById(Long id){
+    public UsuarioHateoasDTO findById(Long id){
         Usuario usuario = this.usuarioRepository.findById(id).orElseThrow(
                 () -> new UsuarioException("El usuario con id " + id + " no existe")
         );
@@ -44,14 +44,14 @@ public class UsuarioServicelmpl implements UsuarioService{
 
     @Transactional
     @Override
-    public UsuarioDTO save(Usuario usuario) {
+    public UsuarioHateoasDTO save(Usuario usuario) {
         Usuario savedUsuario = this.usuarioRepository.save(usuario);
         return assembler.toModel(savedUsuario);
     }
 
     @Transactional
     @Override
-    public UsuarioDTO updateById(Long id, Usuario usuario) {
+    public UsuarioHateoasDTO updateById(Long id, Usuario usuario) {
         Usuario usuarioDb = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioException("El usuario con id " + id + " no existe"));
 

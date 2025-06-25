@@ -3,7 +3,8 @@ package com.duoc.msvc.pedido.services;
 import com.duoc.msvc.pedido.assemblers.PedidoDTOModelAssembler;
 import com.duoc.msvc.pedido.clients.*;
 import com.duoc.msvc.pedido.dtos.DetallePedidoDTO;
-import com.duoc.msvc.pedido.dtos.PedidoDTO;
+import com.duoc.msvc.pedido.dtos.PedidoGetDTO;
+import com.duoc.msvc.pedido.dtos.PedidoHateoasDTO;
 import com.duoc.msvc.pedido.dtos.pojos.*;
 import com.duoc.msvc.pedido.exceptions.PedidoException;
 import com.duoc.msvc.pedido.models.entities.DetallePedido;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,15 +38,19 @@ public class PedidoServiceImpl implements PedidoService{
     private PedidoDTOModelAssembler assembler;
 
     @Override
-    public CollectionModel<PedidoDTO> findAll() {
-        List<Pedido> pedidos = this.pedidoRepository.findAll();
-        return assembler.toCollectionModel(pedidos);
+    @Transactional
+    public CollectionModel<PedidoHateoasDTO> findAll() {
+        List<Pedido> pedidos = this.pedidoRepository.findAllWithDetalles();
+        List<PedidoGetDTO> dtos = pedidos.stream().map(this::convertToDTOForCollection).toList();
+        return assembler.toCollectionModelFromDTOs(dtos);
     }
 
     @Override
-    public CollectionModel<PedidoDTO> findByIdCliente(Long idCliente) {
+    @Transactional
+    public CollectionModel<PedidoHateoasDTO> findByIdCliente(Long idCliente) {
         List<Pedido> pedidos = this.pedidoRepository.findByIdCliente(idCliente);
-        return assembler.toCollectionModel(pedidos);
+        List<PedidoGetDTO> dtos = pedidos.stream().map(this::convertToDTOForCollection).toList();
+        return assembler.toCollectionModelFromDTOs(dtos);
     }
 
     @Override
@@ -102,7 +106,7 @@ public class PedidoServiceImpl implements PedidoService{
 
     @Transactional
     @Override
-    public PedidoDTO updateById(Long id, Pedido pedido) {
+    public PedidoHateoasDTO updateById(Long id, Pedido pedido) {
         Pedido pedidoDb = pedidoRepository.findById(id).orElseThrow(
             () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
         );
@@ -117,14 +121,26 @@ public class PedidoServiceImpl implements PedidoService{
     @Transactional
     @Override
     public void deleteById(Long id) {
-        pedidoRepository.findById(id).orElseThrow(
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow(
             () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
         );
+        // Cambiar estado del pago a Cancelado
+        try {
+            pagoClient.updateEstadoById(id, "Cancelado");
+        } catch (Exception e) {
+            // Loguear pero no impedir la eliminación
+        }
+        // Cambiar estado del envío a Cancelado
+        try {
+            envioClient.updateEstadoById(id, "Cancelado");
+        } catch (Exception e) {
+            // Loguear pero no impedir la eliminación
+        }
         pedidoRepository.deleteById(id);
     }
 
     @Override
-    public PedidoDTO findById(Long id) {
+    public PedidoHateoasDTO findById(Long id) {
         Pedido pedido = pedidoRepository.findById(id).orElseThrow(
                 () -> new PedidoException("El pedido con el id " + id + " no existe en la base de datos")
         );
@@ -132,7 +148,7 @@ public class PedidoServiceImpl implements PedidoService{
     }
 
     @Override
-    public PedidoDTO save(Pedido pedido) {
+    public PedidoHateoasDTO save(Pedido pedido) {
         if(pedido == null){
             throw new IllegalArgumentException("El pedido no puede ser nulo");
         }
@@ -162,12 +178,20 @@ public class PedidoServiceImpl implements PedidoService{
             totalDetalles = totalDetalles.add(subtotal);
 
             detalle.setPrecio(productoClientDTO.getPrecio());
-            detalle.setIdSucursal(sucursalClientDTO.getIdSucursal());
+            detalle.setIdSucursal(sucursalClientDTO.getId());
 
             Integer nuevoStock = inventario.getStock() - detalle.getCantidad();
 
+            // Validar que los IDs no sean nulos antes de llamar al servicio
+            if (sucursalClientDTO.getId() == null) {
+                throw new RuntimeException("ID de sucursal es nulo para el producto: " + detalle.getIdProducto());
+            }
+            if (inventario.getIdInventario() == null) {
+                throw new RuntimeException("ID de inventario es nulo para el producto: " + detalle.getIdProducto());
+            }
+
             sucursalClient.updateStock(
-                    sucursalClientDTO.getIdSucursal(),         // idSuc
+                    sucursalClientDTO.getId(),                  // idSuc
                     inventario.getIdInventario(),              // idInv
                     nuevoStock                                 // nuevoStock
             );
@@ -186,7 +210,7 @@ public class PedidoServiceImpl implements PedidoService{
         PagoClientDTO pagoClientDTO = new PagoClientDTO();
         pagoClientDTO.setIdPedido(saved.getIdPedido());
         pagoClientDTO.setMonto(montoFinal);
-        pagoClientDTO.setMetodo(saved.getMetodoPago());
+        pagoClientDTO.setMetodoPago(saved.getMetodoPago());
 
         pagoClient.save(pagoClientDTO);
 
@@ -209,62 +233,70 @@ public class PedidoServiceImpl implements PedidoService{
     }
 
     @Override
-    public PedidoDTO convertToDTO(Pedido pedido) {
-
+    public PedidoHateoasDTO convertToDTO(Pedido pedido) {
         UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(pedido.getIdCliente());
-
-        PedidoDTO dto = new PedidoDTO();
+        PedidoGetDTO dto = new PedidoGetDTO();
         dto.setId(pedido.getIdPedido());
-        dto.setIdCliente(usuarioClientDTO.getIdCliente());
+        dto.setIdCliente(pedido.getIdCliente());
         dto.setDireccion(usuarioClientDTO.getDireccion());
         dto.setRegion(usuarioClientDTO.getRegion());
         dto.setComuna(usuarioClientDTO.getComuna());
         dto.setNombreCliente(usuarioClientDTO.getNombre());
         dto.setApellidoCliente(usuarioClientDTO.getApellido());
         dto.setCorreo(usuarioClientDTO.getCorreo());
-
         dto.setCostoEnvio(pedido.getCostoEnvio());
         dto.setTotalDetalles(pedido.getTotalDetalles());
         dto.setMontoFinal(pedido.getMontoFinal());
         dto.setMetodoPago(pedido.getMetodoPago());
         dto.setEstado(pedido.getEstado());
-
+        dto.setFecha(pedido.getFecha());
         List<DetallePedidoDTO> detallesDTO = pedido.getDetallesPedido().stream()
                 .map(detalle -> {
                     ProductoClientDTO productoClientDTO = productoClient.findById(detalle.getIdProducto());
-
                     DetallePedidoDTO detalleDTO = new DetallePedidoDTO();
-
                     detalleDTO.setIdProducto(detalle.getIdProducto());
                     detalleDTO.setCantidad(detalle.getCantidad());
                     detalleDTO.setPrecio(detalle.getPrecio());
                     detalleDTO.setNombreProducto(productoClientDTO.getNombre());
                     detalleDTO.setMarcaProducto(productoClientDTO.getMarca());
-
                     return detalleDTO;
                 })
                 .toList();
-
         dto.setDetallesPedido(detallesDTO);
-        
-        // Agregar enlaces HATEOAS usando el assembler
-        PedidoDTO dtoWithLinks = assembler.toModel(pedido);
-        // Copiar los datos del DTO original al DTO con enlaces
-        dtoWithLinks.setId(dto.getId());
-        dtoWithLinks.setIdCliente(dto.getIdCliente());
-        dtoWithLinks.setDireccion(dto.getDireccion());
-        dtoWithLinks.setRegion(dto.getRegion());
-        dtoWithLinks.setComuna(dto.getComuna());
-        dtoWithLinks.setNombreCliente(dto.getNombreCliente());
-        dtoWithLinks.setApellidoCliente(dto.getApellidoCliente());
-        dtoWithLinks.setCorreo(dto.getCorreo());
-        dtoWithLinks.setCostoEnvio(dto.getCostoEnvio());
-        dtoWithLinks.setTotalDetalles(dto.getTotalDetalles());
-        dtoWithLinks.setMontoFinal(dto.getMontoFinal());
-        dtoWithLinks.setMetodoPago(dto.getMetodoPago());
-        dtoWithLinks.setEstado(dto.getEstado());
-        dtoWithLinks.setDetallesPedido(dto.getDetallesPedido());
-        
-        return dtoWithLinks;
+        return assembler.toModelFromDTO(dto);
+    }
+
+    // Nuevo método auxiliar para conversión rápida sin enlaces HATEOAS individuales
+    private PedidoGetDTO convertToDTOForCollection(Pedido pedido) {
+        UsuarioClientDTO usuarioClientDTO = usuarioClient.getUsuarioById(pedido.getIdCliente());
+        PedidoGetDTO dto = new PedidoGetDTO();
+        dto.setId(pedido.getIdPedido());
+        dto.setIdCliente(pedido.getIdCliente());
+        dto.setDireccion(usuarioClientDTO.getDireccion());
+        dto.setRegion(usuarioClientDTO.getRegion());
+        dto.setComuna(usuarioClientDTO.getComuna());
+        dto.setNombreCliente(usuarioClientDTO.getNombre());
+        dto.setApellidoCliente(usuarioClientDTO.getApellido());
+        dto.setCorreo(usuarioClientDTO.getCorreo());
+        dto.setCostoEnvio(pedido.getCostoEnvio());
+        dto.setTotalDetalles(pedido.getTotalDetalles());
+        dto.setMontoFinal(pedido.getMontoFinal());
+        dto.setMetodoPago(pedido.getMetodoPago());
+        dto.setEstado(pedido.getEstado());
+        dto.setFecha(pedido.getFecha());
+        List<DetallePedidoDTO> detallesDTO = pedido.getDetallesPedido().stream()
+                .map(detalle -> {
+                    ProductoClientDTO productoClientDTO = productoClient.findById(detalle.getIdProducto());
+                    DetallePedidoDTO detalleDTO = new DetallePedidoDTO();
+                    detalleDTO.setIdProducto(detalle.getIdProducto());
+                    detalleDTO.setCantidad(detalle.getCantidad());
+                    detalleDTO.setPrecio(detalle.getPrecio());
+                    detalleDTO.setNombreProducto(productoClientDTO.getNombre());
+                    detalleDTO.setMarcaProducto(productoClientDTO.getMarca());
+                    return detalleDTO;
+                })
+                .toList();
+        dto.setDetallesPedido(detallesDTO);
+        return dto;
     }
 }

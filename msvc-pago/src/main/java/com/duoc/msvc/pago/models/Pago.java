@@ -35,7 +35,7 @@ public class Pago {
     private String estado; // Pendiente, Completado, Rechazado, etc.
 
     @Column(updatable = false)
-    private String fecha;
+    private LocalDateTime fecha;
 
     @Column(updatable = false, nullable = false)
     private Long idPedido;

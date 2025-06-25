@@ -39,7 +39,7 @@ public class LoadDatabase implements CommandLineRunner {
             );
 
             producto.setNombre(faker.options().option(nombreBase) + " " + faker.options().option("Extrait", "Eau de Parfum", "Eau de Toilette", "Eau de Cologne"));
-            producto.setMarca(faker.options().option("Channel", "Dior", "Victoria's Secrets", "Giorgio Armani", "Carolina Herrera", "Ralph Lauren", "Versace", "Rabanne"));
+            producto.setMarca(faker.options().option("Channel", "Dior", "Victoria's Secrets", "Giorgio Armani", "Perfume", "Ralph Lauren", "Versace", "Rabanne"));
             producto.setPrecio(BigDecimal.valueOf(faker.number().numberBetween(5000, 120000)));
             producto.setDescripcion(faker.lorem().sentence());
             producto.setPorcentajeConcentracion(faker.number().randomDouble(0, 1, 40));

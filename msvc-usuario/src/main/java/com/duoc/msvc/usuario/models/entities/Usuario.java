@@ -26,32 +26,25 @@ public class Usuario {
     private String apellido;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo comuna no puede estar vacio")
     private String region;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo comuna no puede estar vacio")
     private String comuna;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo ciudad no puede estar vacio")
     private String ciudad;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo direccion no puede estar vacio")
     private String direccion;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo codigoPostal no puede estar vacio")
     private String codigoPostal;
 
     @Column(nullable = false)
     @Email
-    @NotBlank(message = "El campo correo no puede estar vacio")
     private String correo;
 
     @Column(nullable = false)
-    @NotBlank(message = "El campo contraseña no puede estar vacio")
     private String contrasena;
 
     //@Digits(integer = 9, fraction = 0)

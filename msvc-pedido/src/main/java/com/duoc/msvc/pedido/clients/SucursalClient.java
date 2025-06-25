@@ -10,7 +10,7 @@ public interface SucursalClient {
     @GetMapping("/{id}")
     SucursalClientDTO getSucursalById(@PathVariable Long id);
 
-    @GetMapping("/best-stock/{idProducto}")
+    @GetMapping("/mejor-stock/{idProducto}")
     SucursalClientDTO getSucursalBestStockByIdProducto(@PathVariable Long idProducto);
 
     @PutMapping("/{idSucursal}/inventario/{idInventario}/stock")

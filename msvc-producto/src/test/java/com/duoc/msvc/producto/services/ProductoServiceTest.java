@@ -1,15 +1,17 @@
 package com.duoc.msvc.producto.services;
 
-import com.duoc.msvc.producto.dtos.ProductoDTO;
+import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
+import com.duoc.msvc.producto.assemblers.ProductoDTOModelAssembler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.hateoas.CollectionModel;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -24,38 +26,55 @@ class ProductoServiceTest {
 
     @Mock
     private ProductoRepository productoRepository;
+    @Mock
+    private ProductoDTOModelAssembler assembler;
     @InjectMocks
     private ProductoServiceImpl productoService;
 
     private Producto producto;
+    private ProductoHateoasDTO productoHateoasDTO;
 
     @BeforeEach
     void setUp() {
         producto = new Producto();
         producto.setIdProducto(1L);
-        producto.setNombre("Aspirina");
-        producto.setMarca("Bayer");
+        producto.setNombre("Perfume");
+        producto.setMarca("Carolina Herrera");
         producto.setPrecio(BigDecimal.valueOf(1990));
-        producto.setDescripcion("Analgésico");
-        producto.setImagenRepresentativaURL("http://img.com/aspirina.jpg");
-        producto.setCategoria("Medicamento");
+        producto.setDescripcion("El mejor perfume del mercado");
+        producto.setImagenRepresentativaURL("http://img.com/perfume.jpg");
+        producto.setCategoria("Aromatico");
         producto.setPorcentajeConcentracion(0.5);
+
+        productoHateoasDTO = new ProductoHateoasDTO();
+        productoHateoasDTO.setId(1L);
+        productoHateoasDTO.setNombre("Perfume");
+        productoHateoasDTO.setMarca("Carolina Herrera");
+        productoHateoasDTO.setPrecio(BigDecimal.valueOf(1990));
+        productoHateoasDTO.setDescripcion("El mejor perfume del mercado");
+        productoHateoasDTO.setImagenRepresentativaURL("http://img.com/Perfume.jpg");
+        productoHateoasDTO.setCategoria("Aromatico");
+        productoHateoasDTO.setPorcentajeConcentracion(0.5);
     }
 
     @Test
     void shouldListAllProductos() {
         when(productoRepository.findAll()).thenReturn(Arrays.asList(producto));
-        List<ProductoDTO> result = productoService.findAll();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getNombre()).isEqualTo("Aspirina");
+        when(assembler.toCollectionModel(Arrays.asList(producto))).thenReturn(CollectionModel.of(Arrays.asList(productoHateoasDTO)));
+        
+        CollectionModel<ProductoHateoasDTO> result = productoService.findAll();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().iterator().next().getNombre()).isEqualTo("Perfume");
         verify(productoRepository).findAll();
     }
 
     @Test
     void shouldFindProductoById() {
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        ProductoDTO dto = productoService.findById(1L);
-        assertThat(dto.getNombre()).isEqualTo("Aspirina");
+        when(assembler.toModel(producto)).thenReturn(productoHateoasDTO);
+        
+        ProductoHateoasDTO dto = productoService.findById(1L);
+        assertThat(dto.getNombre()).isEqualTo("Perfume");
         verify(productoRepository).findById(1L);
     }
 
@@ -71,27 +90,40 @@ class ProductoServiceTest {
     @Test
     void shouldCreateProducto() {
         when(productoRepository.save(any(Producto.class))).thenReturn(producto);
-        ProductoDTO dto = productoService.save(producto);
-        assertThat(dto.getNombre()).isEqualTo("Aspirina");
+        when(assembler.toModel(producto)).thenReturn(productoHateoasDTO);
+        
+        ProductoHateoasDTO dto = productoService.save(producto);
+        assertThat(dto.getNombre()).isEqualTo("Perfume");
         verify(productoRepository).save(producto);
     }
 
     @Test
     void shouldUpdateProducto() {
         Producto updated = new Producto();
-        updated.setNombre("Paracetamol");
-        updated.setMarca("Genérico");
+        updated.setNombre("OtroPerfume");
+        updated.setMarca("OtraMarca");
         updated.setPrecio(BigDecimal.valueOf(990));
-        updated.setDescripcion("Fiebre");
+        updated.setDescripcion("OtraDescripcion");
         updated.setImagenRepresentativaURL("http://img.com/para.jpg");
-        updated.setCategoria("Medicamento");
+        updated.setCategoria("OtraCategoria");
         updated.setPorcentajeConcentracion(0.3);
+
+        ProductoHateoasDTO updatedHateoasDTO = new ProductoHateoasDTO();
+        updatedHateoasDTO.setId(1L);
+        updatedHateoasDTO.setNombre("OtroPerfume");
+        updatedHateoasDTO.setMarca("OtraMarca");
+        updatedHateoasDTO.setPrecio(BigDecimal.valueOf(990));
+        updatedHateoasDTO.setDescripcion("OtraDescripcion");
+        updatedHateoasDTO.setImagenRepresentativaURL("http://img.com/para.jpg");
+        updatedHateoasDTO.setCategoria("OtraCategoria");
+        updatedHateoasDTO.setPorcentajeConcentracion(0.3);
 
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
         when(productoRepository.save(any(Producto.class))).thenReturn(updated);
+        when(assembler.toModel(updated)).thenReturn(updatedHateoasDTO);
 
-        ProductoDTO dto = productoService.updateById(1L, updated);
-        assertThat(dto.getNombre()).isEqualTo("Paracetamol");
+        ProductoHateoasDTO dto = productoService.updateById(1L, updated);
+        assertThat(dto.getNombre()).isEqualTo("OtroPerfume");
         verify(productoRepository).findById(1L);
         verify(productoRepository).save(any(Producto.class));
     }
@@ -122,13 +154,5 @@ class ProductoServiceTest {
                 .isInstanceOf(ProductoException.class)
                 .hasMessageContaining("no existe");
         verify(productoRepository).findById(2L);
-    }
-
-    @Test
-    void shouldConvertToDTO() {
-        ProductoDTO dto = productoService.convertToDTO(producto);
-        assertThat(dto.getNombre()).isEqualTo("Aspirina");
-        assertThat(dto.getMarca()).isEqualTo("Bayer");
-        assertThat(dto.getPrecio()).isEqualTo(BigDecimal.valueOf(1990));
     }
 } 

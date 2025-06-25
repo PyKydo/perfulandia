@@ -1,6 +1,6 @@
 package com.duoc.msvc.producto.assemblers;
 
-import com.duoc.msvc.producto.controllers.ProductoController;
+import com.duoc.msvc.producto.controllers.ProductoHATEOASController;
 import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.models.entities.Producto;
 import org.springframework.hateoas.CollectionModel;
@@ -26,10 +26,10 @@ public class ProductoDTOModelAssembler implements RepresentationModelAssembler<P
         productoDTO.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
 
         // Agregar enlaces HATEOAS
-        productoDTO.add(linkTo(methodOn(ProductoController.class).findById(producto.getIdProducto())).withSelfRel());
-        productoDTO.add(linkTo(methodOn(ProductoController.class).findAllHateoas()).withRel("productos"));
-        productoDTO.add(linkTo(methodOn(ProductoController.class).findByCategoria(producto.getCategoria())).withRel("productosPorCategoria"));
-        productoDTO.add(linkTo(methodOn(ProductoController.class).findByMarca(producto.getMarca())).withRel("productosPorMarca"));
+        productoDTO.add(linkTo(methodOn(ProductoHATEOASController.class).findById(producto.getIdProducto())).withSelfRel());
+        productoDTO.add(linkTo(methodOn(ProductoHATEOASController.class).findAll()).withRel("productos"));
+        productoDTO.add(linkTo(methodOn(ProductoHATEOASController.class).findByCategoria(producto.getCategoria())).withRel("productosPorCategoria"));
+        productoDTO.add(linkTo(methodOn(ProductoHATEOASController.class).findByMarca(producto.getMarca())).withRel("productosPorMarca"));
 
         return productoDTO;
     }
@@ -39,7 +39,7 @@ public class ProductoDTOModelAssembler implements RepresentationModelAssembler<P
         CollectionModel<ProductoHateoasDTO> productoDTOs = RepresentationModelAssembler.super.toCollectionModel(entities);
         
         // Agregar enlace a la colección
-        productoDTOs.add(linkTo(methodOn(ProductoController.class).findAllHateoas()).withSelfRel());
+        productoDTOs.add(linkTo(methodOn(ProductoHATEOASController.class).findAll()).withSelfRel());
         
         return productoDTOs;
     }

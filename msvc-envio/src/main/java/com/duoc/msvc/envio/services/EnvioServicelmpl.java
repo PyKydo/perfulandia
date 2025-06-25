@@ -2,13 +2,17 @@ package com.duoc.msvc.envio.services;
 
 import com.duoc.msvc.envio.clients.PedidoClient;
 import com.duoc.msvc.envio.dtos.EnvioDTO;
+import com.duoc.msvc.envio.dtos.EnvioGetDTO;
+import com.duoc.msvc.envio.dtos.EnvioHateoasDTO;
 import com.duoc.msvc.envio.exceptions.EnvioException;
 import com.duoc.msvc.envio.models.entities.Envio;
 import com.duoc.msvc.envio.repositories.EnvioRepository;
+import com.duoc.msvc.envio.assemblers.EnvioDTOModelAssembler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.hateoas.CollectionModel;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,15 +28,18 @@ public class EnvioServicelmpl implements EnvioService{
     @Autowired
     private PedidoClient pedidoClient;
 
+    @Autowired
+    private EnvioDTOModelAssembler assembler;
+
     @Override
-    public List<EnvioDTO> findAll() {
+    public List<EnvioGetDTO> findAll() {
         return this.envioRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .toList();
     }
 
     @Override
-    public EnvioDTO findById(Long id) {
+    public EnvioGetDTO findById(Long id) {
         Envio envio = this.envioRepository.findById(id).orElseThrow(
                 () -> new EnvioException("El envio con id "+ id + " no existe")
         );
@@ -40,7 +47,7 @@ public class EnvioServicelmpl implements EnvioService{
     }
 
     @Override
-    public EnvioDTO save(Envio envio) {
+    public EnvioGetDTO save(Envio envio) {
         if(envio.getCosto() == null){
             envio.setCosto(getCostoEnvio());
         }
@@ -51,16 +58,22 @@ public class EnvioServicelmpl implements EnvioService{
     }
 
     @Override
-public EnvioDTO updateById(Long id, Envio envioActualizado) {
+    public EnvioGetDTO updateById(Long id, Envio envioActualizado) {
         Envio envioExistente = envioRepository.findById(id)
-                .orElseThrow(() -> new EnvioException("El envio con id " + id+ " no existe"));
+                .orElseThrow(() -> new EnvioException("El envio con id " + id + " no existe"));
 
-        envioActualizado.setFechaEstimadaEntrega(envioExistente.getFechaEstimadaEntrega());
-        envioActualizado.setIdPedido(envioExistente.getIdPedido());
-        envioActualizado.setCosto(envioExistente.getCosto());
+        // Solo actualiza los campos editables
+        envioExistente.setDireccion(envioActualizado.getDireccion());
+        envioExistente.setRegion(envioActualizado.getRegion());
+        envioExistente.setCiudad(envioActualizado.getCiudad());
+        envioExistente.setComuna(envioActualizado.getComuna());
+        envioExistente.setCodigoPostal(envioActualizado.getCodigoPostal());
+        envioExistente.setEstado(envioActualizado.getEstado());
+        envioExistente.setFechaEstimadaEntrega(envioActualizado.getFechaEstimadaEntrega());
 
-        return convertToDTO(envioRepository.save(envioActualizado));
+        return convertToDTO(envioRepository.save(envioExistente));
     }
+
     @Override
     public void deleteById(Long id) {
         if (!envioRepository.existsById(id)) {
@@ -71,8 +84,8 @@ public EnvioDTO updateById(Long id, Envio envioActualizado) {
 
     @Transactional
     @Override
-    public EnvioDTO convertToDTO(Envio envio) {
-        EnvioDTO dto = new EnvioDTO();
+    public EnvioGetDTO convertToDTO(Envio envio) {
+        EnvioGetDTO dto = new EnvioGetDTO();
         dto.setId(envio.getIdEnvio());
         dto.setCosto(envio.getCosto());
         dto.setCiudad(envio.getCiudad());
@@ -82,7 +95,7 @@ public EnvioDTO updateById(Long id, Envio envioActualizado) {
         dto.setRegion(envio.getRegion());
         dto.setCodigoPostal(envio.getCodigoPostal());
         dto.setIdPedido(envio.getIdPedido());
-
+        dto.setFechaEstimadaEntrega(envio.getFechaEstimadaEntrega());
         return dto;
     }
 
@@ -143,5 +156,19 @@ public EnvioDTO updateById(Long id, Envio envioActualizado) {
             envioRepository.save(envio);
             throw new EnvioException("Error al actualizar el estado: " + e.getMessage());
         }
+    }
+
+    @Override
+    public CollectionModel<EnvioHateoasDTO> findAllHateoas() {
+        List<Envio> envios = this.envioRepository.findAll();
+        return assembler.toCollectionModel(envios);
+    }
+
+    @Override
+    public EnvioHateoasDTO findByIdHateoas(Long id) {
+        Envio envio = this.envioRepository.findById(id).orElseThrow(
+                () -> new EnvioException("El envio con id "+ id + " no existe")
+        );
+        return assembler.toModel(envio);
     }
 }

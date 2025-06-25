@@ -1,7 +1,6 @@
 package com.duoc.msvc.pago.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,17 +8,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
     @Bean
-    public OpenAPI customOpenAPI(){
-        Contact contact = new Contact();
-        contact.setName("Equipo Perfulandia");
-        contact.setEmail("soporte@perfulandia.com");
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("API - MSVC - Pago")
+                        .title("Perfulandia - Microservicio de Pago")
                         .version("1.0.0")
-                        .description("Microservicio de Pago para operaciones CRUD y gestión de pagos.")
-                        .contact(contact)
-                        .summary("API de pagos del sistema Perfulandia")
-        );
+                        .summary("API para la gestión de pagos en Perfulandia")
+                        .description("""
+Este microservicio permite gestionar los pagos de Perfulandia, incluyendo:
+- Creación, actualización, obtención y eliminación de pagos
+- Asociación de pagos a pedidos y envíos
+- Respuestas simples y con HATEOAS para facilitar la integración
+
+Incluye validaciones, ejemplos realistas y documentación detallada para facilitar el desarrollo y la integración.
+""")
+                );
     }
 } 

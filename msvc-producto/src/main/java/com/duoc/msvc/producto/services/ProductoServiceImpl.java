@@ -1,8 +1,8 @@
 package com.duoc.msvc.producto.services;
 
 import com.duoc.msvc.producto.assemblers.ProductoDTOModelAssembler;
-import com.duoc.msvc.producto.dtos.ProductoDTO;
 import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
+import com.duoc.msvc.producto.dtos.ProductoGetDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
@@ -21,22 +21,7 @@ public class ProductoServiceImpl implements ProductoService{
     private ProductoDTOModelAssembler assembler;
 
     @Override
-    public List<ProductoDTO> findAllSimple() {
-        return this.productoRepository.findAll().stream().map(this::convertToDTO).toList();
-    }
-
-    @Override
-    public List<ProductoDTO> findByCategoriaSimple(String categoria) {
-        return this.productoRepository.findByCategoria(categoria).stream().map(this::convertToDTO).toList();
-    }
-
-    @Override
-    public List<ProductoDTO> findByMarcaSimple(String marca) {
-        return this.productoRepository.findByMarca(marca).stream().map(this::convertToDTO).toList();
-    }
-
-    @Override
-    public CollectionModel<ProductoHateoasDTO> findAllHateoas() {
+    public CollectionModel<ProductoHateoasDTO> findAll() {
         List<Producto> productos = this.productoRepository.findAll();
         return assembler.toCollectionModel(productos);
     }
@@ -94,8 +79,8 @@ public class ProductoServiceImpl implements ProductoService{
         productoRepository.deleteById(id);
     }
 
-    private ProductoDTO convertToDTO(Producto producto) {
-        ProductoDTO dto = new ProductoDTO();
+    private ProductoGetDTO convertToGetDTO(Producto producto) {
+        ProductoGetDTO dto = new ProductoGetDTO();
         dto.setId(producto.getIdProducto());
         dto.setNombre(producto.getNombre());
         dto.setMarca(producto.getMarca());

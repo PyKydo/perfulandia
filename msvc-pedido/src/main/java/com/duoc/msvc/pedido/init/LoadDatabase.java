@@ -2,7 +2,10 @@ package com.duoc.msvc.pedido.init;
 
 import com.duoc.msvc.pedido.models.entities.DetallePedido;
 import com.duoc.msvc.pedido.models.entities.Pedido;
-import com.duoc.msvc.pedido.repositories.PedidoRepository;
+import com.duoc.msvc.pedido.services.PedidoService;
+import com.duoc.msvc.pedido.clients.SucursalClient;
+import com.duoc.msvc.pedido.dtos.pojos.SucursalClientDTO;
+import com.duoc.msvc.pedido.dtos.pojos.InventarioClientDTO;
 import net.datafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +24,10 @@ import java.util.Random;
 @Component
 public class LoadDatabase implements CommandLineRunner {
     @Autowired
-    private PedidoRepository pedidoRepository;
+    private PedidoService pedidoService;
+
+    @Autowired
+    private SucursalClient sucursalClient;
 
     private static final Logger logger = LoggerFactory.getLogger(LoadDatabase.class);
 
@@ -30,7 +36,7 @@ public class LoadDatabase implements CommandLineRunner {
         Faker faker = new Faker(new Locale("es", "CL"));
         Random random = new Random();
 
-        if (pedidoRepository.count() == 0) {
+        if (pedidoService.findAll().getContent().isEmpty()) {
             logger.info("Generando 50 pedidos de prueba...");
             for (int i = 0; i < 50; i++) {
                 Pedido pedido = new Pedido();
@@ -42,17 +48,39 @@ public class LoadDatabase implements CommandLineRunner {
                 List<DetallePedido> detalles = new ArrayList<>();
                 BigDecimal totalDetalles = BigDecimal.ZERO;
 
-                for (int j = 0; j < detallesCount; j++) {
-                    DetallePedido detalle = new DetallePedido();
-                    detalle.setIdProducto((long) faker.number().numberBetween(1, 100));
-                    detalle.setIdSucursal((long) faker.number().numberBetween(1, 20));
-                    int cantidad = faker.number().numberBetween(1, 10);
-                    detalle.setCantidad(cantidad);
-                    BigDecimal precio = BigDecimal.valueOf(faker.number().randomDouble(2, 1000, 20000));
-                    detalle.setPrecio(precio);
-                    detalle.setPedido(pedido);
-                    detalles.add(detalle);
-                    totalDetalles = totalDetalles.add(precio.multiply(BigDecimal.valueOf(cantidad)));
+                int intentos = 0;
+                while (detalles.size() < detallesCount && intentos < detallesCount * 3) {
+                    intentos++;
+                    Long idProducto = (long) faker.number().numberBetween(1, 100);
+                    Long idSucursal = (long) faker.number().numberBetween(1, 20);
+                    // Consultar inventario real
+                    try {
+                        SucursalClientDTO sucursal = sucursalClient.getSucursalBestStockByIdProducto(idProducto);
+                        if (sucursal != null && sucursal.getInventarios() != null) {
+                            InventarioClientDTO inventario = sucursal.getInventarios().stream()
+                                .filter(inv -> inv.getIdProducto().equals(idProducto) && inv.getStock() > 0)
+                                .findFirst().orElse(null);
+                            if (inventario != null) {
+                                DetallePedido detalle = new DetallePedido();
+                                detalle.setIdProducto(idProducto);
+                                detalle.setIdSucursal(sucursal.getId());
+                                int cantidad = faker.number().numberBetween(1, Math.min(10, inventario.getStock()));
+                                detalle.setCantidad(cantidad);
+                                BigDecimal precio = BigDecimal.valueOf(faker.number().randomDouble(2, 1000, 20000));
+                                detalle.setPrecio(precio);
+                                detalle.setPedido(pedido);
+                                detalles.add(detalle);
+                                totalDetalles = totalDetalles.add(precio.multiply(BigDecimal.valueOf(cantidad)));
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Si no hay inventario, omitir y seguir intentando
+                    }
+                }
+
+                if (detalles.isEmpty()) {
+                    logger.warn("No se pudo crear pedido {} porque no se encontró inventario válido para los productos.", i + 1);
+                    continue;
                 }
 
                 pedido.setDetallesPedido(detalles);
@@ -61,10 +89,14 @@ public class LoadDatabase implements CommandLineRunner {
                 pedido.setCostoEnvio(costoEnvio);
                 pedido.setMontoFinal(totalDetalles.add(costoEnvio));
 
-                pedidoRepository.save(pedido);
-                logger.debug("Pedido {} creado: {}", i + 1, pedido.toString());
+                try {
+                    pedidoService.save(pedido);
+                    logger.debug("Pedido {} creado: {}", i + 1, pedido.toString());
+                } catch (Exception e) {
+                    logger.warn("No se pudo guardar el pedido {}: {}", i + 1, e.getMessage());
+                }
             }
-            logger.info("Se generaron 50 pedidos de prueba exitosamente");
+            logger.info("Se generaron 50 pedidos de prueba exitosamente (o los que fue posible)");
         } else {
             logger.info("Ya existen pedidos en la base de datos, no se generaron datos de prueba");
         }
