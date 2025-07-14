@@ -1,5 +1,4 @@
-package com.duoc.msvc.usuario.dtos.pojos;
-
+package com.duoc.msvc.pedido.dtos.pojos;
 
 import lombok.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,5 +33,4 @@ public class PedidoClientDTO {
     private String metodoPago;
     @Schema(description = "Estado del pedido", example = "Pendiente")
     private String estado;
-
-}
+} 

@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/sucursales")
 @Validated
-@Tag(name = "Sucursal (Simple)", description = "Endpoints para gestión de sucursales sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
+@Tag(name = "1. Sucursal (Simple)", description = "Endpoints para gestión de sucursales sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
 public class SucursalController {
 
     @Autowired
@@ -106,5 +106,12 @@ public class SucursalController {
     @GetMapping("/mejor-stock/{idProducto}")
     public ResponseEntity<SucursalGetDTO> bestStockByIdProducto(@PathVariable Long idProducto){
         return ResponseEntity.status(HttpStatus.OK).body(sucursalService.findByBestStock(idProducto));
+    }
+
+    @GetMapping("/disponibilidad/{idProducto}")
+    @Operation(summary = "Consultar disponibilidad de producto", description = "Obtiene información sobre la disponibilidad de un producto en las sucursales")
+    public ResponseEntity<String> getProductoDisponibilidad(@PathVariable Long idProducto){
+        String disponibilidad = sucursalService.getProductoDisponibilidad(idProducto);
+        return ResponseEntity.status(HttpStatus.OK).body(disponibilidad);
     }
 }

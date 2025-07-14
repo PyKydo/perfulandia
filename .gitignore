@@ -43,3 +43,6 @@ build/
 .trace.db
 /data
 .fake
+
+#### Markdown guia ###
+ET_FINAL.md

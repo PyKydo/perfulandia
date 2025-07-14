@@ -1,6 +1,5 @@
 package com.duoc.msvc.pago.controllers;
 
-import com.duoc.msvc.pago.dtos.PagoHateoasDTO;
 import com.duoc.msvc.pago.dtos.PagoCreateDTO;
 import com.duoc.msvc.pago.dtos.PagoUpdateDTO;
 import com.duoc.msvc.pago.dtos.pojos.PedidoClientDTO;
@@ -15,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/pagos")
+@RequestMapping("/api/v1/pagos-hateoas")
 @Validated
-@Tag(name = "Pagos (HATEOAS)", description = "Endpoints para pagos con HATEOAS. Las respuestas incluyen enlaces para navegación RESTful.")
+@Tag(name = "2. Pago (HATEOAS)", description = "Endpoints para gestión de pagos con HATEOAS. Las respuestas incluyen enlaces para navegación RESTful.")
 public class PagoHateoasController {
     @Autowired
     private PagoService pagoService;
@@ -36,9 +36,9 @@ public class PagoHateoasController {
     @Operation(summary = "Obtener todos los pagos", description = "Retorna una lista de pagos con enlaces HATEOAS")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de pagos obtenida exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagoHateoasDTO.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Pago.class)))
     })
-    public ResponseEntity<CollectionModel<PagoHateoasDTO>> findAll(){
+    public ResponseEntity<CollectionModel<EntityModel<Pago>>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(this.pagoService.findAll());
     }
 
@@ -46,21 +46,21 @@ public class PagoHateoasController {
     @Operation(summary = "Obtener pagos por estado", description = "Retorna pagos filtrados por estado con enlaces HATEOAS")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pagos encontrados",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagoHateoasDTO.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Pago.class)))
     })
-    public ResponseEntity<CollectionModel<PagoHateoasDTO>> findByEstado(@PathVariable String estado){
+    public ResponseEntity<CollectionModel<EntityModel<Pago>>> findByEstado(@PathVariable String estado){
         return ResponseEntity.status(HttpStatus.OK).body(this.pagoService.findByEstado(estado));
     }
 
     @Operation(summary = "Obtener pago por ID", description = "Retorna un pago dado su ID con enlaces HATEOAS")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pago encontrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Pago.class))),
         @ApiResponse(responseCode = "404", description = "Pago no encontrado",
             content = @Content)
     })
     @GetMapping("/{id}")
-    public ResponseEntity<PagoHateoasDTO> findById(
+    public ResponseEntity<EntityModel<Pago>> findById(
             @Parameter(description = "ID del pago", example = "1") @PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(this.pagoService.findById(id));
     }
@@ -68,16 +68,16 @@ public class PagoHateoasController {
     @Operation(summary = "Crear un nuevo pago", description = "Crea un pago a partir de los datos enviados en el cuerpo de la petición")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Pago creado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Pago.class))),
         @ApiResponse(responseCode = "400", description = "Datos inválidos",
             content = @Content)
     })
     @PostMapping
-    public ResponseEntity<PagoHateoasDTO> save(@Valid @RequestBody PagoCreateDTO pagoCreateDTO){
+    public ResponseEntity<EntityModel<Pago>> save(@Valid @RequestBody PagoCreateDTO pagoCreateDTO){
         Pago pago = convertToEntity(pagoCreateDTO);
-        ResponseEntity<PedidoClientDTO> response = this.pedidoClient.findById(pago.getIdPedido());
+        ResponseEntity<com.duoc.msvc.pago.dtos.pojos.PedidoClientDTO> response = this.pedidoClient.findById(pago.getIdPedido());
         if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            throw new PagoException("El pedido con ID " + pago.getIdPedido() + " no existe");
+            throw new com.duoc.msvc.pago.exceptions.PagoException("El pedido con ID " + pago.getIdPedido() + " no existe");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(pagoService.save(pago));
     }
@@ -85,12 +85,12 @@ public class PagoHateoasController {
     @Operation(summary = "Actualizar pago por ID", description = "Actualiza los datos de un pago existente y retorna con enlaces HATEOAS")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pago actualizado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Pago.class))),
         @ApiResponse(responseCode = "404", description = "Pago no encontrado",
             content = @Content)
     })
     @PutMapping("/{id}")
-    public ResponseEntity<PagoHateoasDTO> updateById(
+    public ResponseEntity<EntityModel<Pago>> updateById(
             @Parameter(description = "ID del pago a actualizar", example = "1") @PathVariable Long id,
             @Parameter(description = "Datos actualizados del pago") @Valid @RequestBody PagoUpdateDTO pagoUpdateDTO){
         Pago pago = convertToEntity(pagoUpdateDTO);

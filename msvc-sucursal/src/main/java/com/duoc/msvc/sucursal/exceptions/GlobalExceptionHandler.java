@@ -4,6 +4,8 @@ import com.duoc.msvc.sucursal.dtos.ErrorDTO;
 import com.duoc.msvc.sucursal.exceptions.SucursalException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,8 +19,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(SucursalException.class)
     public ResponseEntity<ErrorDTO> handleSucursalException(SucursalException ex) {
+        logger.error("GlobalExceptionHandler - SucursalException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -30,6 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDTO> handleEntityNotFoundException(EntityNotFoundException ex) {
+        logger.error("GlobalExceptionHandler - EntityNotFoundException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setDate(new Date());
@@ -41,6 +47,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        logger.error("GlobalExceptionHandler - ValidationException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -54,6 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex) {
+        logger.error("GlobalExceptionHandler - ConstraintViolationException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -65,8 +73,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ErrorDTO> handleNullPointerException(NullPointerException ex) {
+        logger.error("GlobalExceptionHandler - NullPointerException: {}", ex.getMessage());
+        ErrorDTO error = new ErrorDTO();
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setDate(new Date());
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Error de datos: Se intentó acceder a un objeto que no existe. Verifique que los datos solicitados estén disponibles.");
+        error.setErrors(errors);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleGlobalException(Exception ex) {
+        logger.error("GlobalExceptionHandler - GlobalException: {}", ex.getMessage(), ex);
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.setDate(new Date());

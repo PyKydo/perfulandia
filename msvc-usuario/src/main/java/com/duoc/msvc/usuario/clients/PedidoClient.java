@@ -9,15 +9,18 @@ import java.util.List;
 
 @FeignClient(name = "msvc-pedido", url = "http://localhost:8004/api/v1/pedidos")
 public interface PedidoClient {
-    @PostMapping
+    @PostMapping("/cliente")
     PedidoClientDTO save(@Valid @RequestBody PedidoClientDTO pedidoClientDTO);
 
-    @GetMapping("/cliente/{idCliente}")
+    @GetMapping("/cliente/{idCliente}/client")
     List<PedidoClientDTO> findAllByIdCliente(@PathVariable Long idCliente);
 
-    @GetMapping("/{idPedido}")
+    @GetMapping("/{idPedido}/client")
     PedidoClientDTO findByIdPedido(@PathVariable Long idPedido);
 
     @PutMapping("/{idPedido}/actualizarEstado/{nuevoEstado}")
     String updateEstadoByIdPedido(@PathVariable Long idPedido, @PathVariable String nuevoEstado);
+
+    @PutMapping("/{idCliente}/pagarPedido/{idPedido}")
+    PedidoClientDTO pagarPedido(@PathVariable Long idCliente, @PathVariable Long idPedido);
 }

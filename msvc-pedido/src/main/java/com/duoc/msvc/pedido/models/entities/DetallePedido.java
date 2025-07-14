@@ -1,6 +1,5 @@
 package com.duoc.msvc.pedido.models.entities;
 
-import com.duoc.msvc.pedido.models.Producto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

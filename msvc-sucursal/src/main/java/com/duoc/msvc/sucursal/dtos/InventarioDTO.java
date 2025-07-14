@@ -9,9 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class InventarioDTO {
     @Schema(description = "ID del inventario", example = "100")
     private Long id;
-    @Schema(description = "ID del producto asociado", example = "1")
+    @Schema(description = "ID del producto asociado", example = "5")
     private Long idProducto;
-    @Schema(description = "Nombre del producto", example = "Perfume Elegante")
+    @Schema(description = "Nombre del producto", example = "Chanel N°5 Eau de Parfum")
     private String nombreProducto;
     @Schema(description = "Marca del producto", example = "Chanel")
     private String marcaProducto;

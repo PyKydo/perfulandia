@@ -20,14 +20,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/pagos-simple")
+@RequestMapping("/api/v1/pagos")
 @Validated
-@Tag(name = "Pago (Simple)", description = "Endpoints para pagos sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
+@Tag(name = "1. Pago (Simple)", description = "Endpoints para gestión de pagos sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
 public class PagoController {
     @Autowired
     private PagoService pagoService;
@@ -41,9 +43,9 @@ public class PagoController {
     })
     @GetMapping
     public ResponseEntity<List<PagoGetDTO>> findAll(){
-        var collectionModel = this.pagoService.findAll();
+        CollectionModel<EntityModel<Pago>> collectionModel = this.pagoService.findAll();
         List<PagoGetDTO> pagos = collectionModel.getContent().stream()
-            .map(this::convertToGetDTO)
+            .map(entityModel -> convertToGetDTO(entityModel.getContent()))
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(pagos);
     }
@@ -58,15 +60,15 @@ public class PagoController {
     @GetMapping("/{id}")
     public ResponseEntity<PagoGetDTO> findById(
             @Parameter(description = "ID del pago", example = "1") @PathVariable Long id) {
-        var hateoasDto = this.pagoService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(hateoasDto));
+        EntityModel<Pago> entityModel = this.pagoService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(entityModel.getContent()));
     }
 
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<PagoGetDTO>> findByEstado(@PathVariable String estado){
-        var collectionModel = this.pagoService.findByEstado(estado);
+        CollectionModel<EntityModel<Pago>> collectionModel = this.pagoService.findByEstado(estado);
         List<PagoGetDTO> pagos = collectionModel.getContent().stream()
-            .map(this::convertToGetDTO)
+            .map(entityModel -> convertToGetDTO(entityModel.getContent()))
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(pagos);
     }
@@ -81,12 +83,12 @@ public class PagoController {
     @PostMapping
     public ResponseEntity<PagoGetDTO> save(@Valid @RequestBody PagoCreateDTO pagoCreateDTO){
         Pago pago = convertToEntity(pagoCreateDTO);
-        ResponseEntity<PedidoClientDTO> response = this.pedidoClient.findById(pago.getIdPedido());
+        ResponseEntity<com.duoc.msvc.pago.dtos.pojos.PedidoClientDTO> response = this.pedidoClient.findById(pago.getIdPedido());
         if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            throw new PagoException("El pedido con ID " + pago.getIdPedido() + " no existe");
+            throw new com.duoc.msvc.pago.exceptions.PagoException("El pedido con ID " + pago.getIdPedido() + " no existe");
         }
-        var hateoasDto = pagoService.save(pago);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToGetDTO(hateoasDto));
+        EntityModel<Pago> entityModel = pagoService.save(pago);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToGetDTO(entityModel.getContent()));
     }
 
     @Operation(summary = "Actualizar pago por ID (simple)", description = "Actualiza los datos de un pago existente sin enlaces HATEOAS")
@@ -101,8 +103,8 @@ public class PagoController {
             @Parameter(description = "ID del pago a actualizar", example = "1") @PathVariable Long id,
             @Parameter(description = "Datos actualizados del pago") @Valid @RequestBody PagoUpdateDTO pagoUpdateDTO){
         Pago pago = convertToEntity(pagoUpdateDTO);
-        var hateoasDto = this.pagoService.updateById(id, pago);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(hateoasDto));
+        EntityModel<Pago> entityModel = this.pagoService.updateById(id, pago);
+        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(entityModel.getContent()));
     }
 
     @Operation(summary = "Eliminar pago por ID (simple)", description = "Elimina un pago existente por su ID")
@@ -124,14 +126,14 @@ public class PagoController {
         return ResponseEntity.status(HttpStatus.OK).body(pagoService.updateEstadoById(idPedido, nuevoEstado));
     }
 
-    private PagoGetDTO convertToGetDTO(com.duoc.msvc.pago.dtos.PagoHateoasDTO hateoasDto) {
+    private PagoGetDTO convertToGetDTO(Pago pago) {
         PagoGetDTO dto = new PagoGetDTO();
-        dto.setId(hateoasDto.getId());
-        dto.setIdPedido(hateoasDto.getIdPedido());
-        dto.setMonto(hateoasDto.getMonto());
-        dto.setMetodoPago(hateoasDto.getMetodoPago());
-        dto.setEstado(hateoasDto.getEstado());
-        dto.setFechaPago(hateoasDto.getFechaPago());
+        dto.setId(pago.getIdPago());
+        dto.setIdPedido(pago.getIdPedido());
+        dto.setMonto(pago.getMonto());
+        dto.setMetodoPago(pago.getMetodo());
+        dto.setEstado(pago.getEstado());
+        dto.setFechaPago(pago.getFecha());
         return dto;
     }
 

@@ -38,8 +38,6 @@ public class Pedido {
     @Column(name = "total_detalles")
     private BigDecimal totalDetalles = BigDecimal.ZERO;
 
-    // Lo mas seguro para el manejo de datos relacionados con el dinero (Y así evitar los problemas de redondeo)
-
     @Column(name = "monto_final")
     private BigDecimal montoFinal = BigDecimal.ZERO;
 

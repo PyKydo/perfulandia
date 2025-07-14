@@ -1,10 +1,8 @@
 package com.duoc.msvc.sucursal.init;
 
-import com.duoc.msvc.sucursal.dtos.SucursalCreateDTO;
 import com.duoc.msvc.sucursal.models.entities.Inventario;
 import com.duoc.msvc.sucursal.models.entities.Sucursal;
 import com.duoc.msvc.sucursal.repositories.SucursalRepository;
-import com.duoc.msvc.sucursal.services.SucursalService;
 import net.datafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +20,6 @@ public class LoadDatabase implements CommandLineRunner {
     @Autowired
     private SucursalRepository sucursalRepository;
 
-    @Autowired
-    private SucursalService sucursalService;
-
     private static final Logger logger = LoggerFactory.getLogger(LoadDatabase.class);
 
     @Override
@@ -32,9 +27,7 @@ public class LoadDatabase implements CommandLineRunner {
         Faker faker = new Faker();
 
         if (sucursalRepository.count() == 0) {
-            logger.info("Generando datos de prueba para sucursales e inventarios...");
-
-            // Generar 10 sucursales
+            logger.info("LoadDatabase - Inicialización: Generando datos de prueba para sucursales e inventarios");
             for (long i = 1L; i <= 10L; i++) {
                 Sucursal sucursal = new Sucursal();
                 sucursal.setDireccion(faker.address().streetAddress());
@@ -44,39 +37,36 @@ public class LoadDatabase implements CommandLineRunner {
                 sucursal.setHorariosAtencion("9:00-18:00");
 
                 List<Inventario> inventarios = new ArrayList<>();
-
-                // Asegurar al menos 20 productos con stock > 0
                 for (long j = 1L; j <= 100L; j++) {
                     Inventario inventario = new Inventario();
                     inventario.setSucursal(sucursal);
                     inventario.setIdProducto(j);
                     if (j <= 20) {
-                        inventario.setStock(faker.number().numberBetween(10, 150)); // Siempre stock positivo
+                        inventario.setStock(faker.number().numberBetween(50, 200)); // Stock alto para productos populares
+                    } else if (j <= 60) {
+                        inventario.setStock(faker.number().numberBetween(10, 80)); // Stock medio
                     } else {
-                        inventario.setStock(faker.number().numberBetween(0, 2) == 0 ? 0 : faker.number().numberBetween(1, 20));
+                        if (faker.number().numberBetween(1, 10) <= 8) {
+                            inventario.setStock(faker.number().numberBetween(1, 15)); // Stock bajo
+                        } else {
+                            inventario.setStock(0); // Sin stock
+                        }
                     }
                     inventarios.add(inventario);
                 }
 
                 sucursal.setInventarios(inventarios);
-
-                sucursalService.save(toCreateDTO(sucursal));
-                logger.debug("Sucursal {} creada con {} inventarios", i, inventarios.size());
+                Sucursal savedSucursal = sucursalRepository.save(sucursal);
+                logger.debug("LoadDatabase - Debug: Sucursal {} creada con {} inventarios", i, savedSucursal.getInventarios().size());
+                int totalStock = savedSucursal.getInventarios().stream()
+                    .mapToInt(Inventario::getStock)
+                    .sum();
+                logger.debug("LoadDatabase - Debug: Sucursal {} - Total stock: {}", i, totalStock);
             }
 
-            logger.info("Se generaron 10 sucursales con 100 productos cada una");
+            logger.info("LoadDatabase - Inicialización: Se generaron 10 sucursales con 100 productos cada una (1000 inventarios totales)");
         } else {
-            logger.info("Las sucursales ya existen en la base de datos");
+            logger.info("LoadDatabase - Inicialización: Las sucursales ya existen en la base de datos");
         }
-    }
-
-    private SucursalCreateDTO toCreateDTO(Sucursal sucursal) {
-        SucursalCreateDTO dto = new SucursalCreateDTO();
-        dto.setDireccion(sucursal.getDireccion());
-        dto.setRegion(sucursal.getRegion());
-        dto.setComuna(sucursal.getComuna());
-        dto.setCantidadPersonal(sucursal.getCantidadPersonal());
-        dto.setHorariosAtencion(sucursal.getHorariosAtencion());
-        return dto;
     }
 }

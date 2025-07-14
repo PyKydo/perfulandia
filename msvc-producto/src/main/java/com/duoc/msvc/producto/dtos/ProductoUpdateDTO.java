@@ -9,8 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @AllArgsConstructor @NoArgsConstructor
 @Schema(description = "DTO para la actualización de un producto")
 public class ProductoUpdateDTO {
-    @Schema(description = "ID del producto", example = "1")
-    private Long id;
     
     @Schema(description = "Nombre del producto", example = "Perfume Elegante")
     @NotBlank(message = "El nombre es obligatorio")

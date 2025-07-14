@@ -1,7 +1,11 @@
 package com.duoc.msvc.usuario.controllers;
 
 import com.duoc.msvc.usuario.dtos.UsuarioSimpleDTO;
+import com.duoc.msvc.usuario.dtos.UsuarioCreateDTO;
+import com.duoc.msvc.usuario.dtos.UsuarioUpdateDTO;
 import com.duoc.msvc.usuario.dtos.pojos.PedidoClientDTO;
+import com.duoc.msvc.usuario.dtos.pojos.PedidoInputDTO;
+import com.duoc.msvc.usuario.dtos.pojos.DetallePedidoClientDTO;
 import com.duoc.msvc.usuario.models.entities.Usuario;
 import com.duoc.msvc.usuario.services.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,8 +26,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/usuarios-simple")
-@Tag(name = "Usuario (Simple)", description = "API REST para la gestión de usuarios en Perfulandia. Versión simple.")
+@RequestMapping("/api/v1/usuarios")
+@Tag(name = " 1. Usuario (Simple)", description = "Endpoints para gestión de usuarios sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
 public class UsuarioController {
 
     @Autowired
@@ -38,7 +42,7 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioSimpleDTO>> findAll(){
         var collectionModel = this.usuarioService.findAll();
         List<UsuarioSimpleDTO> usuarios = collectionModel.getContent().stream()
-            .map(this::convertToSimpleDTO)
+            .map(entityModel -> convertToSimpleDTO(entityModel.getContent()))
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(usuarios);
     }
@@ -53,8 +57,8 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioSimpleDTO> findById(
             @Parameter(description = "ID único del usuario", example = "1") @PathVariable Long id) {
-        var usuarioHateoas = this.usuarioService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToSimpleDTO(usuarioHateoas));
+        var entityModel = this.usuarioService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(convertToSimpleDTO(entityModel.getContent()));
     }
 
     @Operation(summary = "Crea un nuevo usuario", description = "Crea un nuevo usuario a partir de los datos enviados en el cuerpo de la petición.")
@@ -66,9 +70,21 @@ public class UsuarioController {
     })
     @PostMapping
     public ResponseEntity<UsuarioSimpleDTO> save(
-            @Parameter(description = "Usuario a crear") @Valid @RequestBody Usuario usuario) {
-        var usuarioHateoas = this.usuarioService.save(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToSimpleDTO(usuarioHateoas));
+            @Parameter(description = "Datos del usuario a crear") @Valid @RequestBody UsuarioCreateDTO usuarioCreateDTO) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(usuarioCreateDTO.getNombre());
+        usuario.setApellido(usuarioCreateDTO.getApellido());
+        usuario.setRegion(usuarioCreateDTO.getRegion());
+        usuario.setComuna(usuarioCreateDTO.getComuna());
+        usuario.setCiudad(usuarioCreateDTO.getCiudad());
+        usuario.setCodigoPostal(usuarioCreateDTO.getCodigoPostal());
+        usuario.setDireccion(usuarioCreateDTO.getDireccion());
+        usuario.setCorreo(usuarioCreateDTO.getCorreo());
+        usuario.setContrasena(usuarioCreateDTO.getContrasena());
+        usuario.setTelefono(usuarioCreateDTO.getTelefono());
+        
+        var entityModel = this.usuarioService.save(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToSimpleDTO(entityModel.getContent()));
     }
 
     @Operation(summary = "Actualiza un usuario existente", description = "Actualiza los datos de un usuario existente por su identificador único.")
@@ -81,9 +97,21 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioSimpleDTO> updateById(
             @Parameter(description = "ID único del usuario a actualizar", example = "1") @PathVariable Long id,
-            @Parameter(description = "Datos actualizados del usuario") @RequestBody Usuario usuario){
-        var usuarioHateoas = this.usuarioService.updateById(id, usuario);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToSimpleDTO(usuarioHateoas));
+            @Parameter(description = "Datos actualizados del usuario") @Valid @RequestBody UsuarioUpdateDTO usuarioUpdateDTO){
+        Usuario usuario = new Usuario();
+        usuario.setNombre(usuarioUpdateDTO.getNombre());
+        usuario.setApellido(usuarioUpdateDTO.getApellido());
+        usuario.setRegion(usuarioUpdateDTO.getRegion());
+        usuario.setComuna(usuarioUpdateDTO.getComuna());
+        usuario.setCiudad(usuarioUpdateDTO.getCiudad());
+        usuario.setCodigoPostal(usuarioUpdateDTO.getCodigoPostal());
+        usuario.setDireccion(usuarioUpdateDTO.getDireccion());
+        usuario.setCorreo(usuarioUpdateDTO.getCorreo());
+        usuario.setContrasena(usuarioUpdateDTO.getContrasena());
+        usuario.setTelefono(usuarioUpdateDTO.getTelefono());
+        
+        var entityModel = this.usuarioService.updateById(id, usuario);
+        return ResponseEntity.status(HttpStatus.OK).body(convertToSimpleDTO(entityModel.getContent()));
     }
 
     @Operation(summary = "Elimina un usuario por su ID", description = "Elimina un usuario existente por su identificador único.")
@@ -110,10 +138,22 @@ public class UsuarioController {
     @PostMapping("/{idCliente}/realizarPedido")
     public ResponseEntity<?> realizarPedido(
             @Parameter(description = "ID único del usuario", example = "1") @PathVariable Long idCliente,
-            @Parameter(description = "Datos del pedido a realizar") @RequestBody PedidoClientDTO pedidoClientDTO) {
+            @Parameter(description = "Datos del pedido a realizar") @Valid @RequestBody PedidoInputDTO pedidoInputDTO) {
         try {
-            UsuarioSimpleDTO cliente = convertToSimpleDTO(usuarioService.findById(idCliente));
+            var entityModel = usuarioService.findById(idCliente);
+            UsuarioSimpleDTO cliente = convertToSimpleDTO(entityModel.getContent());
+            PedidoClientDTO pedidoClientDTO = new PedidoClientDTO();
             pedidoClientDTO.setIdCliente(idCliente);
+            pedidoClientDTO.setMetodoPago(pedidoInputDTO.getMetodoPago());
+            pedidoClientDTO.setDetallesPedido(pedidoInputDTO.getDetallesPedido().stream()
+                .map(detalle -> {
+                    DetallePedidoClientDTO detalleClient = new DetallePedidoClientDTO();
+                    detalleClient.setIdProducto(detalle.getIdProducto());
+                    detalleClient.setCantidad(detalle.getCantidad());
+                    return detalleClient;
+                })
+                .collect(Collectors.toList()));
+            
             PedidoClientDTO pedidoRealizado = usuarioService.realizarPedido(pedidoClientDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(pedidoRealizado);
         } catch (EntityNotFoundException e) {
@@ -147,19 +187,19 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(this.usuarioService.misPedidos(idCliente));
     }
 
-    private UsuarioSimpleDTO convertToSimpleDTO(com.duoc.msvc.usuario.dtos.UsuarioHateoasDTO usuarioHateoasDTO) {
+    private UsuarioSimpleDTO convertToSimpleDTO(Usuario usuario) {
         UsuarioSimpleDTO dto = new UsuarioSimpleDTO();
-        dto.setId(usuarioHateoasDTO.getId());
-        dto.setNombre(usuarioHateoasDTO.getNombre());
-        dto.setApellido(usuarioHateoasDTO.getApellido());
-        dto.setRegion(usuarioHateoasDTO.getRegion());
-        dto.setComuna(usuarioHateoasDTO.getComuna());
-        dto.setCiudad(usuarioHateoasDTO.getCiudad());
-        dto.setCodigoPostal(usuarioHateoasDTO.getCodigoPostal());
-        dto.setDireccion(usuarioHateoasDTO.getDireccion());
-        dto.setCorreo(usuarioHateoasDTO.getCorreo());
-        dto.setContrasena(usuarioHateoasDTO.getContrasena());
-        dto.setTelefono(usuarioHateoasDTO.getTelefono());
+        dto.setId(usuario.getIdUsuario());
+        dto.setNombre(usuario.getNombre());
+        dto.setApellido(usuario.getApellido());
+        dto.setRegion(usuario.getRegion());
+        dto.setComuna(usuario.getComuna());
+        dto.setCiudad(usuario.getCiudad());
+        dto.setCodigoPostal(usuario.getCodigoPostal());
+        dto.setDireccion(usuario.getDireccion());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setContrasena(usuario.getContrasena());
+        dto.setTelefono(usuario.getTelefono());
         return dto;
     }
 }

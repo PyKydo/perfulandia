@@ -26,7 +26,7 @@ public class LoadDatabase implements CommandLineRunner {
         Faker faker = new Faker(Locale.of("es", "CL"));
 
         if(usuarioRepository.count() == 0) {
-            logger.info("Generando 100 usuarios de prueba...");
+            logger.info("LoadDatabase - Inicialización: Generando 100 usuarios de prueba");
 
             for(int i = 0; i < 100; i++) {
                 Usuario usuario = new Usuario();
@@ -43,12 +43,12 @@ public class LoadDatabase implements CommandLineRunner {
 
                 usuarioRepository.save(usuario);
 
-                logger.debug("Usuario {} creado: {}", i+1, usuario.toString());
+                logger.debug("LoadDatabase - Debug: Usuario {} creado exitosamente", i+1);
             }
 
-            logger.info("Se generaron 100 usuarios de prueba exitosamente");
+            logger.info("LoadDatabase - Inicialización: Se generaron 100 usuarios de prueba exitosamente");
         } else {
-            logger.info("Ya existen usuarios en la base de datos, no se generaron datos de prueba");
+            logger.info("LoadDatabase - Inicialización: Ya existen usuarios en la base de datos, no se generaron datos de prueba");
         }
     }
 }

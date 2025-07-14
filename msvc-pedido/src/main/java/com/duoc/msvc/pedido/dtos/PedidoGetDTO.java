@@ -3,17 +3,14 @@ package com.duoc.msvc.pedido.dtos;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.core.Relation;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-@Relation(collectionRelation = "pedidos", itemRelation = "pedido")
 @Schema(description = "DTO de respuesta simple para pedidos")
-public class PedidoGetDTO extends RepresentationModel<PedidoGetDTO> {
+public class PedidoGetDTO {
     @Schema(description = "ID del pedido", example = "1")
     private Long id;
     @Schema(description = "ID del usuario que realizó el pedido", example = "10")

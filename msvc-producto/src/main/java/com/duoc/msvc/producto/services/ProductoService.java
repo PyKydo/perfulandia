@@ -1,15 +1,15 @@
 package com.duoc.msvc.producto.services;
 
-import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.models.entities.Producto;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 
 public interface ProductoService {
-    CollectionModel<ProductoHateoasDTO> findAll();
-    CollectionModel<ProductoHateoasDTO> findByCategoria(String categoria);
-    CollectionModel<ProductoHateoasDTO> findByMarca(String marca);
-    ProductoHateoasDTO findById(Long id);
-    ProductoHateoasDTO save(Producto producto);
-    ProductoHateoasDTO updateById(Long id, Producto producto);
+    CollectionModel<EntityModel<Producto>> findAll();
+    CollectionModel<EntityModel<Producto>> findByCategoria(String categoria);
+    CollectionModel<EntityModel<Producto>> findByMarca(String marca);
+    EntityModel<Producto> findById(Long id);
+    EntityModel<Producto> save(Producto producto);
+    EntityModel<Producto> updateById(Long id, Producto producto);
     void deleteById(Long id);
 }

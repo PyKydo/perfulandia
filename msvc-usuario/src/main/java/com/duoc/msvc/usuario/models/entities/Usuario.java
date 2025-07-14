@@ -46,7 +46,5 @@ public class Usuario {
 
     @Column(nullable = false)
     private String contrasena;
-
-    //@Digits(integer = 9, fraction = 0)
     private String telefono;
 }

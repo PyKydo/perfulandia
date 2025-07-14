@@ -23,7 +23,6 @@ public class UsuarioControllerTest {
     @Test
     @DirtiesContext
     public void shouldReturnAllUsuarioWhenListIsRequested() {
-        // Crear dos usuarios
         Usuario usuario1 = new Usuario();
         usuario1.setNombre("Juan Perez");
         usuario1.setApellido("Perez");

@@ -2,12 +2,11 @@ package com.duoc.msvc.pago.services;
 
 import com.duoc.msvc.pago.clients.PedidoClient;
 import com.duoc.msvc.pago.clients.EnvioClient;
-import com.duoc.msvc.pago.dtos.PagoDTO;
 import com.duoc.msvc.pago.dtos.pojos.PedidoClientDTO;
 import com.duoc.msvc.pago.exceptions.PagoException;
 import com.duoc.msvc.pago.models.Pago;
 import com.duoc.msvc.pago.repositories.PagoRepository;
-import com.duoc.msvc.pago.dtos.PagoHateoasDTO;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import com.duoc.msvc.pago.assemblers.PagoDTOModelAssembler;
+import feign.FeignException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -51,26 +48,24 @@ class PagoServiceTest {
         pago.setMetodo("Tarjeta");
         pago.setMonto(BigDecimal.valueOf(15000));
         pago.setEstado("Pendiente");
-        pago.setFecha(LocalDateTime.of(2024, 1, 1, 10, 0, 0));       PagoDTOModelAssembler assembler = new PagoDTOModelAssembler();
-        java.lang.reflect.Field assemblerField = PagoServiceImpl.class.getDeclaredField("assembler");
-        assemblerField.setAccessible(true);
-        assemblerField.set(pagoService, assembler);
+        pago.setFecha(LocalDateTime.of(2024, 1, 1, 10, 0, 0));
     }
 
     @Test
     void shouldListAllPagos() {
         when(pagoRepository.findAll()).thenReturn(Arrays.asList(pago));
-        CollectionModel<PagoHateoasDTO> result = pagoService.findAll();
+        CollectionModel<EntityModel<Pago>> result = pagoService.findAll();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().iterator().next().getMetodoPago()).isEqualTo("Tarjeta");
+        Pago pagoResult = result.getContent().iterator().next().getContent();
+        assertThat(pagoResult.getMetodo()).isEqualTo("Tarjeta");
         verify(pagoRepository).findAll();
     }
 
     @Test
     void shouldFindPagoById() {
         when(pagoRepository.findById(1L)).thenReturn(Optional.of(pago));
-        PagoHateoasDTO dto = pagoService.findById(1L);
-        assertThat(dto.getMetodoPago()).isEqualTo("Tarjeta");
+        EntityModel<Pago> entityModel = pagoService.findById(1L);
+        assertThat(entityModel.getContent().getMetodo()).isEqualTo("Tarjeta");
         verify(pagoRepository).findById(1L);
     }
 
@@ -89,8 +84,8 @@ class PagoServiceTest {
         ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(mockPedido, HttpStatus.OK);
         when(pedidoClient.findById(100L)).thenReturn(response);
         when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
-        PagoHateoasDTO dto = pagoService.save(pago);
-        assertThat(dto.getMetodoPago()).isEqualTo("Tarjeta");
+        EntityModel<Pago> entityModel = pagoService.save(pago);
+        assertThat(entityModel.getContent().getMetodo()).isEqualTo("Tarjeta");
         verify(pagoRepository).save(pago);
         verify(pedidoClient).findById(100L);
     }
@@ -108,9 +103,9 @@ class PagoServiceTest {
         updated.setIdPedido(100L);
         when(pagoRepository.findById(1L)).thenReturn(Optional.of(pago));
         when(pagoRepository.save(any(Pago.class))).thenReturn(updated);
-        PagoHateoasDTO dto = pagoService.updateById(1L, updated);
-        assertThat(dto.getMetodoPago()).isEqualTo("Efectivo");
-        assertThat(dto.getEstado()).isEqualTo("Completado");
+        EntityModel<Pago> entityModel = pagoService.updateById(1L, updated);
+        assertThat(entityModel.getContent().getMetodo()).isEqualTo("Efectivo");
+        assertThat(entityModel.getContent().getEstado()).isEqualTo("Completado");
         verify(pagoRepository).findById(1L);
         verify(pagoRepository).save(any(Pago.class));
         verify(pedidoClient).findById(100L);
@@ -143,5 +138,306 @@ class PagoServiceTest {
                 .isInstanceOf(PagoException.class)
                 .hasMessageContaining("no existe en la base de datos");
         verify(pagoRepository).findById(2L);
+    }
+
+
+    @Test
+    void shouldFindPagosByEstado() {
+        when(pagoRepository.findByEstado("Pendiente")).thenReturn(Arrays.asList(pago));
+        CollectionModel<EntityModel<Pago>> result = pagoService.findByEstado("Pendiente");
+        assertThat(result.getContent()).hasSize(1);
+        Pago pagoResult = result.getContent().iterator().next().getContent();
+        assertThat(pagoResult.getEstado()).isEqualTo("Pendiente");
+        verify(pagoRepository).findByEstado("Pendiente");
+    }
+
+    @Test
+    void shouldUpdateEstadoSuccessfully() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+        when(envioClient.updateEstadoById(100L, "Pendiente")).thenReturn("Envío actualizado");
+
+        String result = pagoService.updateEstadoById(100L, "Completado");
+
+        assertThat(result).isEqualTo("Completado");
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository).save(any(Pago.class));
+        verify(envioClient).updateEstadoById(100L, "Pendiente");
+    }
+
+    @Test
+    void shouldUpdateEstadoAndNotifyEnvioWhenCompletado() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+        when(envioClient.updateEstadoById(100L, "Pendiente")).thenReturn("Envío actualizado");
+
+        String result = pagoService.updateEstadoById(100L, "Completado");
+
+        assertThat(result).isEqualTo("Completado");
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository).save(any(Pago.class));
+        verify(envioClient).updateEstadoById(100L, "Pendiente");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdateEstadoWithNonExistentPedido() {
+        when(pagoRepository.findByIdPedido(999L)).thenReturn(null);
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(999L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("No existe un pago para el pedido");
+
+        verify(pagoRepository).findByIdPedido(999L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdateEstadoWithNullEstado() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, null))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("El nuevo estado no puede estar vacío");
+        verify(pagoRepository).findByIdPedido(100L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdateEstadoWithEmptyEstado() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, ""))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("El nuevo estado no puede estar vacío");
+        verify(pagoRepository).findByIdPedido(100L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdateEstadoWithBlankEstado() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "   "))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("El nuevo estado no puede estar vacío");
+        verify(pagoRepository).findByIdPedido(100L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdateEstadoAlreadyCompleted() {
+        pago.setEstado("Completado");
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("El pago ya está completado");
+
+        verify(pagoRepository).findByIdPedido(100L);
+    }
+
+    @Test
+    void shouldRevertEstadoWhenEnvioClientFails() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+        when(envioClient.updateEstadoById(100L, "Pendiente")).thenThrow(new RuntimeException("Error de conexión"));
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("Error al actualizar el estado del envío");
+
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository, times(2)).save(any(Pago.class));
+        verify(envioClient).updateEstadoById(100L, "Pendiente");
+    }
+
+    @Test
+    void shouldRevertEstadoWhenEnvioClientReturnsEmptyResponse() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+        when(envioClient.updateEstadoById(100L, "Pendiente")).thenReturn("");
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("No se recibió respuesta del servicio de envíos");
+
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository, times(2)).save(any(Pago.class));
+        verify(envioClient).updateEstadoById(100L, "Pendiente");
+    }
+
+    @Test
+    void shouldRevertEstadoWhenEnvioClientReturnsNullResponse() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+        when(envioClient.updateEstadoById(100L, "Pendiente")).thenReturn(null);
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("No se recibió respuesta del servicio de envíos");
+
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository, times(2)).save(any(Pago.class));
+        verify(envioClient).updateEstadoById(100L, "Pendiente");
+    }
+
+    @Test
+    void shouldNotNotifyEnvioWhenEstadoIsNotCompletado() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenReturn(pago);
+
+        String result = pagoService.updateEstadoById(100L, "En Proceso");
+
+        assertThat(result).isEqualTo("En Proceso");
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository).save(any(Pago.class));
+        verify(envioClient, never()).updateEstadoById(any(), any());
+    }
+
+    @Test
+    void shouldHandleExceptionDuringEstadoUpdate() {
+        when(pagoRepository.findByIdPedido(100L)).thenReturn(pago);
+        when(pagoRepository.save(any(Pago.class))).thenThrow(new RuntimeException("Error de base de datos"));
+
+        assertThatThrownBy(() -> pagoService.updateEstadoById(100L, "Completado"))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("Error al actualizar el estado");
+
+        verify(pagoRepository).findByIdPedido(100L);
+        verify(pagoRepository).save(any(Pago.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatePagoWithNullIdPedido() {
+        pago.setIdPedido(null);
+        assertThatThrownBy(() -> pagoService.save(pago))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no puede ser nulo ni igual a 0");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatePagoWithZeroIdPedido() {
+        pago.setIdPedido(0L);
+        assertThatThrownBy(() -> pagoService.save(pago))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no puede ser nulo ni igual a 0");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatePagoWithNonExistentPedido() {
+        ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        when(pedidoClient.findById(999L)).thenReturn(response);
+
+        pago.setIdPedido(999L);
+        assertThatThrownBy(() -> pagoService.save(pago))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no está disponible");
+
+        verify(pedidoClient).findById(999L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatePagoWithPedidoNotFound() {
+        when(pedidoClient.findById(999L)).thenThrow(FeignException.NotFound.class);
+
+        pago.setIdPedido(999L);
+        assertThatThrownBy(() -> pagoService.save(pago))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no existe");
+
+        verify(pedidoClient).findById(999L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatePagoWithPedidoClientError() {
+        when(pedidoClient.findById(999L)).thenThrow(new RuntimeException("Error de conexión"));
+
+        pago.setIdPedido(999L);
+        assertThatThrownBy(() -> pagoService.save(pago))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Error de conexión");
+
+        verify(pedidoClient).findById(999L);
+    }
+
+    @Test
+    void shouldSetDefaultValuesWhenCreatePago() {
+        PedidoClientDTO mockPedido = new PedidoClientDTO();
+        ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(mockPedido, HttpStatus.OK);
+        when(pedidoClient.findById(100L)).thenReturn(response);
+        when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> {
+            Pago savedPago = invocation.getArgument(0);
+            savedPago.setIdPago(1L);
+            savedPago.setEstado("Pendiente");
+            savedPago.setFecha(LocalDateTime.now());
+            return savedPago;
+        });
+
+        pago.setEstado(null);
+        pago.setFecha(null);
+        EntityModel<Pago> entityModel = pagoService.save(pago);
+
+        assertThat(entityModel.getContent().getEstado()).isEqualTo("Pendiente");
+        assertThat(entityModel.getContent().getFecha()).isNotNull();
+        verify(pagoRepository).save(any(Pago.class));
+        verify(pedidoClient).findById(100L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatePagoWithNullIdPedido() {
+        Pago updated = new Pago();
+        updated.setIdPedido(null);
+
+        assertThatThrownBy(() -> pagoService.updateById(1L, updated))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no puede ser nulo ni igual a 0");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatePagoWithZeroIdPedido() {
+        Pago updated = new Pago();
+        updated.setIdPedido(0L);
+
+        assertThatThrownBy(() -> pagoService.updateById(1L, updated))
+                .isInstanceOf(PagoException.class)
+                .hasMessageContaining("no puede ser nulo ni igual a 0");
+    }
+
+    @Test
+    void shouldUpdateAllPagoFields() {
+        PedidoClientDTO mockPedido = new PedidoClientDTO();
+        ResponseEntity<PedidoClientDTO> response = new ResponseEntity<>(mockPedido, HttpStatus.OK);
+        when(pedidoClient.findById(100L)).thenReturn(response);
+
+        Pago updated = new Pago();
+        updated.setMetodo("Transferencia");
+        updated.setMonto(BigDecimal.valueOf(25000));
+        updated.setEstado("Completado");
+        updated.setIdPedido(100L);
+
+        when(pagoRepository.findById(1L)).thenReturn(Optional.of(pago));
+        when(pagoRepository.save(any(Pago.class))).thenReturn(updated);
+
+        EntityModel<Pago> entityModel = pagoService.updateById(1L, updated);
+
+        assertThat(entityModel.getContent().getMetodo()).isEqualTo("Transferencia");
+        assertThat(entityModel.getContent().getMonto()).isEqualTo(BigDecimal.valueOf(25000));
+        assertThat(entityModel.getContent().getEstado()).isEqualTo("Completado");
+        assertThat(entityModel.getContent().getIdPedido()).isEqualTo(100L);
+
+        verify(pagoRepository).findById(1L);
+        verify(pagoRepository).save(any(Pago.class));
+        verify(pedidoClient).findById(100L);
+    }
+
+    @Test
+    void shouldValidatePagoEntityModelStructure() {
+        when(pagoRepository.findById(1L)).thenReturn(Optional.of(pago));
+
+        EntityModel<Pago> entityModel = pagoService.findById(1L);
+
+        assertThat(entityModel).isNotNull();
+        assertThat(entityModel.getContent()).isNotNull();
+        assertThat(entityModel.getContent().getIdPago()).isEqualTo(1L);
+        assertThat(entityModel.getContent().getIdPedido()).isEqualTo(100L);
+        assertThat(entityModel.getContent().getMetodo()).isEqualTo("Tarjeta");
+        assertThat(entityModel.getContent().getMonto()).isEqualTo(BigDecimal.valueOf(15000));
+        assertThat(entityModel.getContent().getEstado()).isEqualTo("Pendiente");
+        assertThat(entityModel.getContent().getFecha()).isNotNull();
+
+        verify(pagoRepository).findById(1L);
     }
 } 

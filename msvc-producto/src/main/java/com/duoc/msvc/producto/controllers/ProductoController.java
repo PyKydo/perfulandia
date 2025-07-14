@@ -20,11 +20,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.hateoas.EntityModel;
 
 @RestController
-@RequestMapping("/api/v1/productos-simple")
+@RequestMapping("/api/v1/productos")
 @Validated
-@Tag(name = "Producto (Simple)", description = "Endpoints para gestión de productos sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces. Ejemplo de respuesta simple:\n{\n  \"id\": 1,\n  \"nombre\": \"Perfume Elegante\",\n  ...\n}")
+@Tag(name = "1. Producto (Simple)", description = "Endpoints para gestión de productos sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
 public class ProductoController {
     
     @Autowired
@@ -39,7 +40,10 @@ public class ProductoController {
     public ResponseEntity<List<ProductoGetDTO>> findAll(){
         var collectionModel = this.productoService.findAll();
         List<ProductoGetDTO> productos = collectionModel.getContent().stream()
-            .map(this::convertToGetDTO)
+            .map(entityModel -> {
+                Producto producto = entityModel.getContent();
+                return convertToGetDTO(producto);
+            })
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(productos);
     }
@@ -54,8 +58,9 @@ public class ProductoController {
     })
     public ResponseEntity<ProductoGetDTO> findById(
             @Parameter(description = "ID único del producto", example = "1") @PathVariable Long id) {
-        var hateoasDto = this.productoService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(hateoasDto));
+        var entityModel = this.productoService.findById(id);
+        Producto producto = entityModel.getContent();
+        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(producto));
     }
 
     @GetMapping("/categoria/{categoria}")
@@ -68,7 +73,10 @@ public class ProductoController {
             @Parameter(description = "Nombre de la categoría", example = "Perfumes") @PathVariable String categoria){
         var collectionModel = this.productoService.findByCategoria(categoria);
         List<ProductoGetDTO> productos = collectionModel.getContent().stream()
-            .map(this::convertToGetDTO)
+            .map(entityModel -> {
+                Producto producto = entityModel.getContent();
+                return convertToGetDTO(producto);
+            })
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(productos);
     }
@@ -83,7 +91,10 @@ public class ProductoController {
             @Parameter(description = "Nombre de la marca", example = "Chanel") @PathVariable String marca){
         var collectionModel = this.productoService.findByMarca(marca);
         List<ProductoGetDTO> productos = collectionModel.getContent().stream()
-            .map(this::convertToGetDTO)
+            .map(entityModel -> {
+                Producto producto = entityModel.getContent();
+                return convertToGetDTO(producto);
+            })
             .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(productos);
     }
@@ -99,8 +110,9 @@ public class ProductoController {
     public ResponseEntity<ProductoGetDTO> save(
             @Parameter(description = "Datos del producto a crear") @RequestBody @Validated ProductoCreateDTO productoCreateDTO) {
         Producto producto = convertToEntity(productoCreateDTO);
-        var hateoasDto = this.productoService.save(producto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertToGetDTO(hateoasDto));
+        var entityModel = this.productoService.save(producto);
+        Producto prod = entityModel.getContent();
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToGetDTO(prod));
     }
 
     @PutMapping("/{id}")
@@ -115,8 +127,9 @@ public class ProductoController {
             @Parameter(description = "ID único del producto a actualizar", example = "1") @PathVariable Long id,
             @Parameter(description = "Datos actualizados del producto") @RequestBody @Validated ProductoUpdateDTO productoUpdateDTO){
         Producto producto = convertToEntity(productoUpdateDTO);
-        var hateoasDto = this.productoService.updateById(id, producto);
-        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(hateoasDto));
+        var entityModel = this.productoService.updateById(id, producto);
+        Producto prod = entityModel.getContent();
+        return ResponseEntity.status(HttpStatus.OK).body(convertToGetDTO(prod));
     }
 
     @DeleteMapping("/{id}")
@@ -133,16 +146,16 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    private ProductoGetDTO convertToGetDTO(com.duoc.msvc.producto.dtos.ProductoHateoasDTO hateoasDto) {
+    private ProductoGetDTO convertToGetDTO(Producto producto) {
         ProductoGetDTO dto = new ProductoGetDTO();
-        dto.setId(hateoasDto.getId());
-        dto.setNombre(hateoasDto.getNombre());
-        dto.setMarca(hateoasDto.getMarca());
-        dto.setPrecio(hateoasDto.getPrecio());
-        dto.setDescripcion(hateoasDto.getDescripcion());
-        dto.setImagenRepresentativaURL(hateoasDto.getImagenRepresentativaURL());
-        dto.setCategoria(hateoasDto.getCategoria());
-        dto.setPorcentajeConcentracion(hateoasDto.getPorcentajeConcentracion());
+        dto.setId(producto.getIdProducto());
+        dto.setNombre(producto.getNombre());
+        dto.setMarca(producto.getMarca());
+        dto.setPrecio(producto.getPrecio());
+        dto.setDescripcion(producto.getDescripcion());
+        dto.setImagenRepresentativaURL(producto.getImagenRepresentativaURL());
+        dto.setCategoria(producto.getCategoria());
+        dto.setPorcentajeConcentracion(producto.getPorcentajeConcentracion());
         return dto;
     }
 

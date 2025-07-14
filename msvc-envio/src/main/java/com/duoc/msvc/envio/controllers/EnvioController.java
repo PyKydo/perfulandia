@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/envios")
 @Validated
-@Tag(name = "Envio (Simple)", description = "Endpoints para gestión de envíos con respuestas simples. Ejemplo de respuesta:")
+@Tag(name = " 1. Envío (Simple)", description = "Endpoints para gestión de envíos sin HATEOAS. Respuestas simples, ideales para clientes que no requieren enlaces.")
 public class EnvioController {
 
     @Autowired

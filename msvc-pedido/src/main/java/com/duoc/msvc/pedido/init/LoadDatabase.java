@@ -37,7 +37,7 @@ public class LoadDatabase implements CommandLineRunner {
         Random random = new Random();
 
         if (pedidoService.findAll().getContent().isEmpty()) {
-            logger.info("Generando 50 pedidos de prueba...");
+            logger.info("LoadDatabase - Inicialización: Generando 50 pedidos de prueba");
             for (int i = 0; i < 50; i++) {
                 Pedido pedido = new Pedido();
                 pedido.setIdCliente((long) faker.number().numberBetween(1, 100));
@@ -53,7 +53,6 @@ public class LoadDatabase implements CommandLineRunner {
                     intentos++;
                     Long idProducto = (long) faker.number().numberBetween(1, 100);
                     Long idSucursal = (long) faker.number().numberBetween(1, 20);
-                    // Consultar inventario real
                     try {
                         SucursalClientDTO sucursal = sucursalClient.getSucursalBestStockByIdProducto(idProducto);
                         if (sucursal != null && sucursal.getInventarios() != null) {
@@ -74,12 +73,11 @@ public class LoadDatabase implements CommandLineRunner {
                             }
                         }
                     } catch (Exception e) {
-                        // Si no hay inventario, omitir y seguir intentando
                     }
                 }
 
                 if (detalles.isEmpty()) {
-                    logger.warn("No se pudo crear pedido {} porque no se encontró inventario válido para los productos.", i + 1);
+                    logger.warn("LoadDatabase - Advertencia: No se pudo crear pedido {} porque no se encontró inventario válido para los productos", i + 1);
                     continue;
                 }
 
@@ -91,14 +89,14 @@ public class LoadDatabase implements CommandLineRunner {
 
                 try {
                     pedidoService.save(pedido);
-                    logger.debug("Pedido {} creado: {}", i + 1, pedido.toString());
+                    logger.debug("LoadDatabase - Debug: Pedido {} creado exitosamente", i + 1);
                 } catch (Exception e) {
-                    logger.warn("No se pudo guardar el pedido {}: {}", i + 1, e.getMessage());
+                    logger.warn("LoadDatabase - Advertencia: No se pudo guardar el pedido {} - {}", i + 1, e.getMessage());
                 }
             }
-            logger.info("Se generaron 50 pedidos de prueba exitosamente (o los que fue posible)");
+            logger.info("LoadDatabase - Inicialización: Se generaron 50 pedidos de prueba exitosamente (o los que fue posible)");
         } else {
-            logger.info("Ya existen pedidos en la base de datos, no se generaron datos de prueba");
+            logger.info("LoadDatabase - Inicialización: Ya existen pedidos en la base de datos, no se generaron datos de prueba");
         }
     }
 } 

@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UsuarioException.class)
     public ResponseEntity<ErrorDTO> handleUsuarioException(UsuarioException ex) {
-        logger.error("UsuarioException: {}", ex.getMessage());
+        logger.error("GlobalExceptionHandler - UsuarioException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDTO> handleEntityNotFoundException(EntityNotFoundException ex) {
-        logger.error("EntityNotFoundException: {}", ex.getMessage());
+        logger.error("GlobalExceptionHandler - EntityNotFoundException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setDate(new Date());
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        logger.error("ValidationException: {}", ex.getMessage());
+        logger.error("GlobalExceptionHandler - ValidationException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex) {
-        logger.error("ConstraintViolationException: {}", ex.getMessage());
+        logger.error("GlobalExceptionHandler - ConstraintViolationException: {}", ex.getMessage());
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TransactionSystemException.class)
     public ResponseEntity<ErrorDTO> handleTransactionSystemException(TransactionSystemException ex) {
-        logger.error("TransactionSystemException: {}", ex.getMessage(), ex);
+        logger.error("GlobalExceptionHandler - TransactionSystemException: {}", ex.getMessage(), ex);
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.setDate(new Date());
@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PersistenceException.class)
     public ResponseEntity<ErrorDTO> handlePersistenceException(PersistenceException ex) {
-        logger.error("PersistenceException: {}", ex.getMessage(), ex);
+        logger.error("GlobalExceptionHandler - PersistenceException: {}", ex.getMessage(), ex);
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.setDate(new Date());
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDTO> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        logger.error("DataIntegrityViolationException: {}", ex.getMessage(), ex);
+        logger.error("GlobalExceptionHandler - DataIntegrityViolationException: {}", ex.getMessage(), ex);
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setDate(new Date());
@@ -113,7 +113,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleGlobalException(Exception ex) {
-        logger.error("GlobalException: {}", ex.getMessage(), ex);
+        logger.error("GlobalExceptionHandler - GlobalException: {}", ex.getMessage(), ex);
         ErrorDTO error = new ErrorDTO();
         error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.setDate(new Date());

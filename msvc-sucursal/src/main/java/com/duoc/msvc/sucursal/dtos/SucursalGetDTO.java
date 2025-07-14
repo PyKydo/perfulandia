@@ -7,20 +7,20 @@ import java.util.ArrayList;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor
-@Schema(description = "DTO para obtener información de una sucursal")
+@Schema(description = "DTO para representar información completa de una sucursal")
 public class SucursalGetDTO {
-    @Schema(description = "ID de la sucursal", example = "1")
+    @Schema(description = "ID único de la sucursal", example = "1")
     private Long id;
-    @Schema(description = "Dirección de la sucursal", example = "Av. Principal 1234")
+    @Schema(description = "Dirección de la sucursal", example = "Av. Apoquindo 4501, Local 1201")
     private String direccion;
-    @Schema(description = "Región de la sucursal", example = "Metropolitana")
+    @Schema(description = "Región donde se ubica la sucursal", example = "Metropolitana de Santiago")
     private String region;
-    @Schema(description = "Comuna de la sucursal", example = "Santiago Centro")
+    @Schema(description = "Comuna donde se ubica la sucursal", example = "Las Condes")
     private String comuna;
-    @Schema(description = "Cantidad de personal", example = "10")
+    @Schema(description = "Cantidad de personal que trabaja en la sucursal", example = "8")
     private Integer cantidadPersonal;
-    @Schema(description = "Horarios de atención", example = "Lunes a Viernes 09:00-18:00")
+    @Schema(description = "Horarios de atención de la sucursal", example = "Lunes a Viernes: 10:00 - 20:00, Sábados: 10:00 - 18:00")
     private String horariosAtencion;
-    @Schema(description = "Inventarios de la sucursal")
-    private List<InventarioDTO> inventarios = new ArrayList<>();
+    @Schema(description = "Lista de inventarios disponibles en la sucursal")
+    private List<InventarioDTO> inventarios;
 } 

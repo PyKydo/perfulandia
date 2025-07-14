@@ -9,14 +9,14 @@ import java.math.BigDecimal;
 @AllArgsConstructor @NoArgsConstructor
 @Schema(description = "DTO para representar el detalle de un pedido")
 public class DetallePedidoClientDTO {
-    @Schema(description = "ID del producto", example = "10")
+    @Schema(description = "ID del producto", example = "5")
     private Long idProducto;
-    @Schema(description = "Nombre del producto", example = "Perfume X")
+    @Schema(description = "Nombre del producto", example = "Chanel N°5 Eau de Parfum")
     private String nombreProducto;
-    @Schema(description = "Marca del producto", example = "Marca Y")
+    @Schema(description = "Marca del producto", example = "Chanel")
     private String marcaProducto;
-    @Schema(description = "Cantidad solicitada", example = "2")
+    @Schema(description = "Cantidad solicitada", example = "1")
     private Integer cantidad;
-    @Schema(description = "Precio unitario del producto", example = "19990.00")
+    @Schema(description = "Precio unitario del producto", example = "89980.00")
     private BigDecimal precio;
 }

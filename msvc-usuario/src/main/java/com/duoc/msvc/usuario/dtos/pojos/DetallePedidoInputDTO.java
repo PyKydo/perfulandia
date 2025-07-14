@@ -1,9 +1,9 @@
-package com.duoc.msvc.pedido.dtos.pojos;
+package com.duoc.msvc.usuario.dtos.pojos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Getter @Setter @ToString
 @AllArgsConstructor @NoArgsConstructor

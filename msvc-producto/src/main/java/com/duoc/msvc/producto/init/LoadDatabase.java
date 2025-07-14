@@ -26,8 +26,8 @@ public class LoadDatabase implements CommandLineRunner {
     Faker faker = new Faker(Locale.of("es","CL"));
 
     if (productoRepository.count()==0){
-        logger.info("Generando 100 usuarios de prueba...");
-        for(int i=0;i<1000;i++){
+        logger.info("LoadDatabase - Inicialización: Generando 100 productos de prueba");
+        for(int i=0;i<100;i++){
             Producto producto = new Producto();
 
             String nombreBase = faker.options().option(
@@ -46,11 +46,11 @@ public class LoadDatabase implements CommandLineRunner {
 
             producto = productoRepository.save(producto);
 
-            logger.debug("Producto {} creado: {}", i+1, producto.toString());
+            logger.debug("LoadDatabase - Debug: Producto {} creado exitosamente", i+1);
         }
-        logger.info("Se generaron 100 productos de prueba exitosamente");
+        logger.info("LoadDatabase - Inicialización: Se generaron 100 productos de prueba exitosamente");
     } else {
-        logger.info("Ya existen productos en la base de datos, no se generaron datos de prueba");
+        logger.info("LoadDatabase - Inicialización: Ya existen productos en la base de datos, no se generaron datos de prueba");
     }
 
     }

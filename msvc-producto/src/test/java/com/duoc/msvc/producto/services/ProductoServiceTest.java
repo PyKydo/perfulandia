@@ -1,10 +1,8 @@
 package com.duoc.msvc.producto.services;
 
-import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.exceptions.ProductoException;
 import com.duoc.msvc.producto.models.entities.Producto;
 import com.duoc.msvc.producto.repositories.ProductoRepository;
-import com.duoc.msvc.producto.assemblers.ProductoDTOModelAssembler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -26,13 +25,10 @@ class ProductoServiceTest {
 
     @Mock
     private ProductoRepository productoRepository;
-    @Mock
-    private ProductoDTOModelAssembler assembler;
     @InjectMocks
     private ProductoServiceImpl productoService;
 
     private Producto producto;
-    private ProductoHateoasDTO productoHateoasDTO;
 
     @BeforeEach
     void setUp() {
@@ -45,36 +41,24 @@ class ProductoServiceTest {
         producto.setImagenRepresentativaURL("http://img.com/perfume.jpg");
         producto.setCategoria("Aromatico");
         producto.setPorcentajeConcentracion(0.5);
-
-        productoHateoasDTO = new ProductoHateoasDTO();
-        productoHateoasDTO.setId(1L);
-        productoHateoasDTO.setNombre("Perfume");
-        productoHateoasDTO.setMarca("Carolina Herrera");
-        productoHateoasDTO.setPrecio(BigDecimal.valueOf(1990));
-        productoHateoasDTO.setDescripcion("El mejor perfume del mercado");
-        productoHateoasDTO.setImagenRepresentativaURL("http://img.com/Perfume.jpg");
-        productoHateoasDTO.setCategoria("Aromatico");
-        productoHateoasDTO.setPorcentajeConcentracion(0.5);
     }
 
     @Test
     void shouldListAllProductos() {
         when(productoRepository.findAll()).thenReturn(Arrays.asList(producto));
-        when(assembler.toCollectionModel(Arrays.asList(producto))).thenReturn(CollectionModel.of(Arrays.asList(productoHateoasDTO)));
         
-        CollectionModel<ProductoHateoasDTO> result = productoService.findAll();
+        CollectionModel<EntityModel<Producto>> result = productoService.findAll();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().iterator().next().getNombre()).isEqualTo("Perfume");
+        assertThat(result.getContent().iterator().next().getContent().getNombre()).isEqualTo("Perfume");
         verify(productoRepository).findAll();
     }
 
     @Test
     void shouldFindProductoById() {
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(assembler.toModel(producto)).thenReturn(productoHateoasDTO);
         
-        ProductoHateoasDTO dto = productoService.findById(1L);
-        assertThat(dto.getNombre()).isEqualTo("Perfume");
+        EntityModel<Producto> result = productoService.findById(1L);
+        assertThat(result.getContent().getNombre()).isEqualTo("Perfume");
         verify(productoRepository).findById(1L);
     }
 
@@ -90,10 +74,9 @@ class ProductoServiceTest {
     @Test
     void shouldCreateProducto() {
         when(productoRepository.save(any(Producto.class))).thenReturn(producto);
-        when(assembler.toModel(producto)).thenReturn(productoHateoasDTO);
         
-        ProductoHateoasDTO dto = productoService.save(producto);
-        assertThat(dto.getNombre()).isEqualTo("Perfume");
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getNombre()).isEqualTo("Perfume");
         verify(productoRepository).save(producto);
     }
 
@@ -108,22 +91,11 @@ class ProductoServiceTest {
         updated.setCategoria("OtraCategoria");
         updated.setPorcentajeConcentracion(0.3);
 
-        ProductoHateoasDTO updatedHateoasDTO = new ProductoHateoasDTO();
-        updatedHateoasDTO.setId(1L);
-        updatedHateoasDTO.setNombre("OtroPerfume");
-        updatedHateoasDTO.setMarca("OtraMarca");
-        updatedHateoasDTO.setPrecio(BigDecimal.valueOf(990));
-        updatedHateoasDTO.setDescripcion("OtraDescripcion");
-        updatedHateoasDTO.setImagenRepresentativaURL("http://img.com/para.jpg");
-        updatedHateoasDTO.setCategoria("OtraCategoria");
-        updatedHateoasDTO.setPorcentajeConcentracion(0.3);
-
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
         when(productoRepository.save(any(Producto.class))).thenReturn(updated);
-        when(assembler.toModel(updated)).thenReturn(updatedHateoasDTO);
 
-        ProductoHateoasDTO dto = productoService.updateById(1L, updated);
-        assertThat(dto.getNombre()).isEqualTo("OtroPerfume");
+        EntityModel<Producto> result = productoService.updateById(1L, updated);
+        assertThat(result.getContent().getNombre()).isEqualTo("OtroPerfume");
         verify(productoRepository).findById(1L);
         verify(productoRepository).save(any(Producto.class));
     }
@@ -154,5 +126,298 @@ class ProductoServiceTest {
                 .isInstanceOf(ProductoException.class)
                 .hasMessageContaining("no existe");
         verify(productoRepository).findById(2L);
+    }
+
+    @Test
+    void shouldFindProductosByCategoria() {
+        Producto producto2 = new Producto();
+        producto2.setIdProducto(2L);
+        producto2.setNombre("Colonia");
+        producto2.setCategoria("Aromatico");
+        
+        when(productoRepository.findByCategoria("Aromatico")).thenReturn(Arrays.asList(producto, producto2));
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByCategoria("Aromatico");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().iterator().next().getContent().getCategoria()).isEqualTo("Aromatico");
+        verify(productoRepository).findByCategoria("Aromatico");
+    }
+
+    @Test
+    void shouldFindProductosByMarca() {
+        Producto producto2 = new Producto();
+        producto2.setIdProducto(2L);
+        producto2.setNombre("Colonia");
+        producto2.setMarca("Carolina Herrera");
+        
+        when(productoRepository.findByMarca("Carolina Herrera")).thenReturn(Arrays.asList(producto, producto2));
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByMarca("Carolina Herrera");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().iterator().next().getContent().getMarca()).isEqualTo("Carolina Herrera");
+        verify(productoRepository).findByMarca("Carolina Herrera");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenCategoriaNotFound() {
+        when(productoRepository.findByCategoria("Inexistente")).thenReturn(Arrays.asList());
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByCategoria("Inexistente");
+        assertThat(result.getContent()).isEmpty();
+        verify(productoRepository).findByCategoria("Inexistente");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenMarcaNotFound() {
+        when(productoRepository.findByMarca("Marca Inexistente")).thenReturn(Arrays.asList());
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByMarca("Marca Inexistente");
+        assertThat(result.getContent()).isEmpty();
+        verify(productoRepository).findByMarca("Marca Inexistente");
+    }
+
+    @Test
+    void shouldCreateProductoWithNullValues() {
+        Producto productoNull = new Producto();
+        productoNull.setIdProducto(3L);
+        productoNull.setNombre(null);
+        productoNull.setMarca(null);
+        productoNull.setPrecio(null);
+        
+        when(productoRepository.save(any(Producto.class))).thenReturn(productoNull);
+        
+        EntityModel<Producto> result = productoService.save(productoNull);
+        assertThat(result.getContent().getIdProducto()).isEqualTo(3L);
+        verify(productoRepository).save(productoNull);
+    }
+
+    @Test
+    void shouldUpdateProductoWithPartialData() {
+        Producto partialUpdate = new Producto();
+        partialUpdate.setNombre("Nuevo Nombre");
+        partialUpdate.setPrecio(BigDecimal.valueOf(2500));
+        
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.updateById(1L, partialUpdate);
+        assertThat(result.getContent().getNombre()).isEqualTo("Nuevo Nombre");
+        verify(productoRepository).findById(1L);
+        verify(productoRepository).save(any(Producto.class));
+    }
+
+    @Test
+    void shouldValidateProductoEntityModelStructure() {
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        
+        EntityModel<Producto> entityModel = productoService.findById(1L);
+        
+        assertThat(entityModel).isNotNull();
+        assertThat(entityModel.getContent()).isNotNull();
+        assertThat(entityModel.getContent().getIdProducto()).isEqualTo(1L);
+        assertThat(entityModel.getContent().getNombre()).isEqualTo("Perfume");
+        assertThat(entityModel.getContent().getMarca()).isEqualTo("Carolina Herrera");
+        assertThat(entityModel.getContent().getPrecio()).isEqualTo(BigDecimal.valueOf(1990));
+        assertThat(entityModel.getContent().getDescripcion()).isEqualTo("El mejor perfume del mercado");
+        assertThat(entityModel.getContent().getImagenRepresentativaURL()).isEqualTo("http://img.com/perfume.jpg");
+        assertThat(entityModel.getContent().getCategoria()).isEqualTo("Aromatico");
+        assertThat(entityModel.getContent().getPorcentajeConcentracion()).isEqualTo(0.5);
+        
+        verify(productoRepository).findById(1L);
+    }
+
+    @Test
+    void shouldValidateCollectionModelStructure() {
+        when(productoRepository.findAll()).thenReturn(Arrays.asList(producto));
+        
+        CollectionModel<EntityModel<Producto>> collectionModel = productoService.findAll();
+        
+        assertThat(collectionModel).isNotNull();
+        assertThat(collectionModel.getContent()).hasSize(1);
+        assertThat(collectionModel.getLinks()).isNotEmpty();
+        
+        verify(productoRepository).findAll();
+    }
+
+    @Test
+    void shouldHandleMultipleProductosInCollection() {
+        Producto producto2 = new Producto();
+        producto2.setIdProducto(2L);
+        producto2.setNombre("Colonia");
+        producto2.setMarca("Chanel");
+        producto2.setPrecio(BigDecimal.valueOf(3000));
+        
+        Producto producto3 = new Producto();
+        producto3.setIdProducto(3L);
+        producto3.setNombre("Aceite");
+        producto3.setMarca("L'Occitane");
+        producto3.setPrecio(BigDecimal.valueOf(1500));
+        
+        when(productoRepository.findAll()).thenReturn(Arrays.asList(producto, producto2, producto3));
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findAll();
+        assertThat(result.getContent()).hasSize(3);
+        
+        verify(productoRepository).findAll();
+    }
+
+    @Test
+    void shouldUpdateAllProductoFields() {
+        Producto updated = new Producto();
+        updated.setNombre("Nuevo Perfume");
+        updated.setMarca("Nueva Marca");
+        updated.setPrecio(BigDecimal.valueOf(5000));
+        updated.setDescripcion("Nueva descripción");
+        updated.setImagenRepresentativaURL("http://img.com/nuevo.jpg");
+        updated.setCategoria("Nueva Categoría");
+        updated.setPorcentajeConcentracion(0.8);
+        
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(any(Producto.class))).thenReturn(updated);
+        
+        EntityModel<Producto> result = productoService.updateById(1L, updated);
+        
+        assertThat(result.getContent().getNombre()).isEqualTo("Nuevo Perfume");
+        assertThat(result.getContent().getMarca()).isEqualTo("Nueva Marca");
+        assertThat(result.getContent().getPrecio()).isEqualTo(BigDecimal.valueOf(5000));
+        assertThat(result.getContent().getDescripcion()).isEqualTo("Nueva descripción");
+        assertThat(result.getContent().getImagenRepresentativaURL()).isEqualTo("http://img.com/nuevo.jpg");
+        assertThat(result.getContent().getCategoria()).isEqualTo("Nueva Categoría");
+        assertThat(result.getContent().getPorcentajeConcentracion()).isEqualTo(0.8);
+        
+        verify(productoRepository).findById(1L);
+        verify(productoRepository).save(any(Producto.class));
+    }
+
+    @Test
+    void shouldHandleZeroPrecio() {
+        producto.setPrecio(BigDecimal.ZERO);
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getPrecio()).isEqualTo(BigDecimal.ZERO);
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandleNegativePrecio() {
+        producto.setPrecio(BigDecimal.valueOf(-100));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getPrecio()).isEqualTo(BigDecimal.valueOf(-100));
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandleEmptyStringValues() {
+        producto.setNombre("");
+        producto.setMarca("");
+        producto.setDescripcion("");
+        producto.setCategoria("");
+        producto.setImagenRepresentativaURL("");
+        
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getNombre()).isEqualTo("");
+        assertThat(result.getContent().getMarca()).isEqualTo("");
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInStrings() {
+        producto.setNombre("Perfume & Colonia");
+        producto.setMarca("L'Oréal");
+        producto.setDescripcion("Descripción con símbolos: @#$%");
+        producto.setCategoria("Aromático-Floral");
+        
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getNombre()).isEqualTo("Perfume & Colonia");
+        assertThat(result.getContent().getMarca()).isEqualTo("L'Oréal");
+        assertThat(result.getContent().getDescripcion()).isEqualTo("Descripción con símbolos: @#$%");
+        assertThat(result.getContent().getCategoria()).isEqualTo("Aromático-Floral");
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandleLargePrecioValues() {
+        producto.setPrecio(BigDecimal.valueOf(999999.99));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getPrecio()).isEqualTo(BigDecimal.valueOf(999999.99));
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandlePorcentajeConcentracionBoundaries() {
+        producto.setPorcentajeConcentracion(0.0);
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getPorcentajeConcentracion()).isEqualTo(0.0);
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldHandleMaxPorcentajeConcentracion() {
+        producto.setPorcentajeConcentracion(1.0);
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        
+        EntityModel<Producto> result = productoService.save(producto);
+        assertThat(result.getContent().getPorcentajeConcentracion()).isEqualTo(1.0);
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void shouldValidateFindByCategoriaWithSpecialCharacters() {
+        when(productoRepository.findByCategoria("Aromático-Floral")).thenReturn(Arrays.asList(producto));
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByCategoria("Aromático-Floral");
+        assertThat(result.getContent()).hasSize(1);
+        verify(productoRepository).findByCategoria("Aromático-Floral");
+    }
+
+    @Test
+    void shouldValidateFindByMarcaWithSpecialCharacters() {
+        when(productoRepository.findByMarca("L'Oréal")).thenReturn(Arrays.asList(producto));
+        
+        CollectionModel<EntityModel<Producto>> result = productoService.findByMarca("L'Oréal");
+        assertThat(result.getContent()).hasSize(1);
+        verify(productoRepository).findByMarca("L'Oréal");
+    }
+
+    @Test
+    void shouldHandleRepositoryExceptionGracefully() {
+        when(productoRepository.findById(1L)).thenThrow(new RuntimeException("Error de base de datos"));
+        
+        assertThatThrownBy(() -> productoService.findById(1L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Error de base de datos");
+        
+        verify(productoRepository).findById(1L);
+    }
+
+    @Test
+    void shouldValidateEntityModelStructure() {
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        
+        EntityModel<Producto> entityModel = productoService.findById(1L);
+        
+        assertThat(entityModel).isNotNull();
+        assertThat(entityModel.getContent()).isNotNull();
+        assertThat(entityModel.getContent().getIdProducto()).isEqualTo(1L);
+        assertThat(entityModel.getContent().getNombre()).isEqualTo("Perfume");
+        assertThat(entityModel.getContent().getMarca()).isEqualTo("Carolina Herrera");
+        assertThat(entityModel.getContent().getPrecio()).isEqualTo(BigDecimal.valueOf(1990));
+        assertThat(entityModel.getContent().getDescripcion()).isEqualTo("El mejor perfume del mercado");
+        assertThat(entityModel.getContent().getImagenRepresentativaURL()).isEqualTo("http://img.com/perfume.jpg");
+        assertThat(entityModel.getContent().getCategoria()).isEqualTo("Aromatico");
+        assertThat(entityModel.getContent().getPorcentajeConcentracion()).isEqualTo(0.5);
+        
+        verify(productoRepository).findById(1L);
     }
 } 

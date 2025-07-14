@@ -1,6 +1,5 @@
 package com.duoc.msvc.envio.controllers;
 
-import com.duoc.msvc.envio.dtos.EnvioHateoasDTO;
 import com.duoc.msvc.envio.dtos.EnvioCreateDTO;
 import com.duoc.msvc.envio.dtos.EnvioUpdateDTO;
 import com.duoc.msvc.envio.models.entities.Envio;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/v1/envios-hateoas")
 @Validated
-@Tag(name = "Envio (HATEOAS)", description = "Endpoints para gestión de envíos con respuestas HATEOAS. Ejemplo de respuesta:")
+@Tag(name = " 2. Envío (HATEOAS)", description = "Endpoints para gestión de envíos con HATEOAS. Las respuestas incluyen enlaces para navegación RESTful.")
 public class EnvioHateoasController {
     @Autowired
     private EnvioService envioService;
@@ -33,9 +33,9 @@ public class EnvioHateoasController {
     @Operation(summary = "Obtener todos los envíos (HATEOAS)", description = "Retorna una lista de envíos con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de envíos obtenida exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EnvioHateoasDTO.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Envio.class)))
     })
-    public ResponseEntity<CollectionModel<EnvioHateoasDTO>> findAll(){
+    public ResponseEntity<CollectionModel<EntityModel<Envio>>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(envioService.findAllHateoas());
     }
 
@@ -43,11 +43,11 @@ public class EnvioHateoasController {
     @Operation(summary = "Obtener envío por ID (HATEOAS)", description = "Retorna un envío por su ID con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Envío encontrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EnvioHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Envio.class))),
         @ApiResponse(responseCode = "404", description = "Envío no encontrado",
             content = @Content)
     })
-    public ResponseEntity<EnvioHateoasDTO> findById(
+    public ResponseEntity<EntityModel<Envio>> findById(
             @Parameter(description = "ID del envío", example = "1") @PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(envioService.findByIdHateoas(id));
     }
@@ -56,11 +56,11 @@ public class EnvioHateoasController {
     @Operation(summary = "Crear un nuevo envío (HATEOAS)", description = "Crea un envío y retorna la entidad con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Envío creado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EnvioHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Envio.class))),
         @ApiResponse(responseCode = "400", description = "Datos inválidos",
             content = @Content)
     })
-    public ResponseEntity<EnvioHateoasDTO> save(@RequestBody @Valid EnvioCreateDTO envioCreateDTO) {
+    public ResponseEntity<EntityModel<Envio>> save(@RequestBody @Valid EnvioCreateDTO envioCreateDTO) {
         Envio envio = new Envio();
         envio.setIdPedido(envioCreateDTO.getIdPedido());
         envio.setDireccion(envioCreateDTO.getDireccion());
@@ -77,11 +77,11 @@ public class EnvioHateoasController {
     @Operation(summary = "Actualizar envío por ID (HATEOAS)", description = "Actualiza un envío existente y retorna la entidad con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Envío actualizado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = EnvioHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Envio.class))),
         @ApiResponse(responseCode = "404", description = "Envío no encontrado",
             content = @Content)
     })
-    public ResponseEntity<EnvioHateoasDTO> updateById(
+    public ResponseEntity<EntityModel<Envio>> updateById(
             @Parameter(description = "ID del envío a actualizar", example = "1") @PathVariable Long id,
             @RequestBody @Valid EnvioUpdateDTO envioUpdateDTO) {
         Envio envio = new Envio();

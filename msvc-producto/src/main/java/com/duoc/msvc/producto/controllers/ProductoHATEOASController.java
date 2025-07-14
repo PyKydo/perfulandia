@@ -1,6 +1,5 @@
 package com.duoc.msvc.producto.controllers;
 
-import com.duoc.msvc.producto.dtos.ProductoHateoasDTO;
 import com.duoc.msvc.producto.dtos.ProductoCreateDTO;
 import com.duoc.msvc.producto.dtos.ProductoUpdateDTO;
 import com.duoc.msvc.producto.models.entities.Producto;
@@ -19,11 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.hateoas.EntityModel;
 
 @RestController
-@RequestMapping("/api/v1/productos")
+@RequestMapping("/api/v1/productos-hateoas")
 @Validated
-@Tag(name = "Producto (HATEOAS)", description = "Endpoints para gestión de productos con HATEOAS. Las respuestas incluyen enlaces para navegación RESTful. Ejemplo de respuesta HATEOAS:\n{\n  \"id\": 1,\n  \"nombre\": \"Perfume Elegante\",\n  ...\n  \"_links\": {\n    \"self\": {\"href\": \"/api/v1/productos/1\"},\n    \"productos\": {\"href\": \"/api/v1/productos\"}\n  }\n}")
+@Tag(name = "2. Producto (HATEOAS)", description = "Endpoints para gestión de productos con HATEOAS. Las respuestas incluyen enlaces para navegación RESTful.")
 public class ProductoHATEOASController {
     @Autowired
     private ProductoService productoService;
@@ -32,9 +32,9 @@ public class ProductoHATEOASController {
     @Operation(summary = "Obtener todos los productos (HATEOAS)", description = "Retorna una lista de productos con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class)))
+            content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<CollectionModel<ProductoHateoasDTO>> findAll(){
+    public ResponseEntity<CollectionModel<EntityModel<Producto>>> findAll(){
         return ResponseEntity.status(HttpStatus.OK).body(this.productoService.findAll());
     }
 
@@ -42,9 +42,9 @@ public class ProductoHATEOASController {
     @Operation(summary = "Obtener productos por categoría (HATEOAS)", description = "Retorna productos filtrados por categoría con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Productos encontrados",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class)))
+            content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<CollectionModel<ProductoHateoasDTO>> findByCategoria(
+    public ResponseEntity<CollectionModel<EntityModel<Producto>>> findByCategoria(
             @Parameter(description = "Nombre de la categoría", example = "Perfumes") @PathVariable String categoria){
         return ResponseEntity.status(HttpStatus.OK).body(this.productoService.findByCategoria(categoria));
     }
@@ -53,9 +53,9 @@ public class ProductoHATEOASController {
     @Operation(summary = "Obtener productos por marca (HATEOAS)", description = "Retorna productos filtrados por marca con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Productos encontrados",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class)))
+            content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<CollectionModel<ProductoHateoasDTO>> findByMarca(
+    public ResponseEntity<CollectionModel<EntityModel<Producto>>> findByMarca(
             @Parameter(description = "Nombre de la marca", example = "Chanel") @PathVariable String marca){
         return ResponseEntity.status(HttpStatus.OK).body(this.productoService.findByMarca(marca));
     }
@@ -64,11 +64,11 @@ public class ProductoHATEOASController {
     @Operation(summary = "Obtener producto por ID (HATEOAS)", description = "Retorna un producto por su ID con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto encontrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json")),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
             content = @Content)
     })
-    public ResponseEntity<ProductoHateoasDTO> findById(
+    public ResponseEntity<EntityModel<Producto>> findById(
             @Parameter(description = "ID único del producto", example = "1") @PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(this.productoService.findById(id));
     }
@@ -77,11 +77,11 @@ public class ProductoHATEOASController {
     @Operation(summary = "Crear un nuevo producto (HATEOAS)", description = "Crea un producto a partir de los datos enviados en el cuerpo de la petición.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Producto creado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Producto.class))),
         @ApiResponse(responseCode = "400", description = "Datos inválidos",
             content = @Content)
     })
-    public ResponseEntity<ProductoHateoasDTO> save(
+    public ResponseEntity<EntityModel<Producto>> save(
             @Parameter(description = "Datos del producto a crear") @Valid @RequestBody ProductoCreateDTO productoCreateDTO) {
         Producto producto = convertToEntity(productoCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.productoService.save(producto));
@@ -91,11 +91,11 @@ public class ProductoHATEOASController {
     @Operation(summary = "Actualizar producto por ID (HATEOAS)", description = "Actualiza los datos de un producto existente con enlaces HATEOAS.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoHateoasDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Producto.class))),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
             content = @Content)
     })
-    public ResponseEntity<ProductoHateoasDTO> updateById(
+    public ResponseEntity<EntityModel<Producto>> updateById(
             @Parameter(description = "ID único del producto a actualizar", example = "1") @PathVariable Long id,
             @Parameter(description = "Datos actualizados del producto") @Valid @RequestBody ProductoUpdateDTO productoUpdateDTO){
         Producto producto = convertToEntity(productoUpdateDTO);

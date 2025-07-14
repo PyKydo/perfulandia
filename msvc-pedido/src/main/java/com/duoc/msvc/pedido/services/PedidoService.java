@@ -1,16 +1,19 @@
 package com.duoc.msvc.pedido.services;
 
-import com.duoc.msvc.pedido.dtos.PedidoHateoasDTO;
+import com.duoc.msvc.pedido.dtos.PedidoGetDTO;
 import com.duoc.msvc.pedido.models.entities.Pedido;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
+import com.duoc.msvc.pedido.dtos.pojos.PedidoClientDTO;
 
 public interface PedidoService{
-    CollectionModel<PedidoHateoasDTO> findAll();
-    CollectionModel<PedidoHateoasDTO> findByIdCliente(Long idCliente);
+    CollectionModel<EntityModel<Pedido>> findAll();
+    CollectionModel<EntityModel<Pedido>> findByIdCliente(Long idCliente);
     String updateEstadoById(Long idPedido, String nuevoEstado);
-    PedidoHateoasDTO findById(Long id);
-    PedidoHateoasDTO save(Pedido pedido);
-    PedidoHateoasDTO convertToDTO(Pedido pedido);
-    PedidoHateoasDTO updateById(Long id, Pedido pedido);
+    EntityModel<Pedido> findById(Long id);
+    EntityModel<Pedido> save(Pedido pedido);
+    PedidoGetDTO convertToDTO(Pedido pedido);
+    PedidoClientDTO convertToClientDTO(Pedido pedido);
+    EntityModel<Pedido> updateById(Long id, Pedido pedido);
     void deleteById(Long id);
 }
